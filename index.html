@@ -1,0 +1,2153 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AI简历分析师 - 智能简历诊断与优化</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Inter"', '"PingFang SC"', '"Microsoft YaHei"', 'system-ui', 'sans-serif']
+          },
+          colors: {
+            ink: {
+              50: '#f6f7f9',
+              100: '#eceef2',
+              200: '#d6dae2',
+              300: '#aeb5c2',
+              400: '#7b8494',
+              500: '#4b5364',
+              600: '#333a49',
+              700: '#23293a',
+              800: '#15192a',
+              900: '#0b0d1a'
+            },
+            brand: {
+              50:  '#eef4ff',
+              100: '#dae6ff',
+              500: '#3b6cf6',
+              600: '#2f59d4',
+              700: '#2647ac'
+            }
+          },
+          boxShadow: {
+            card: '0 1px 2px rgba(15,23,42,.04), 0 4px 16px rgba(15,23,42,.06)'
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lucide-static@0.441.0/font/lucide.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    .icon { font-family: 'lucide' !important; font-style: normal; font-weight: normal; display: inline-block; line-height: 1; }
+    
+    .fade-in { animation: fade .6s ease both; }
+    @keyframes fade { from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none} }
+    
+    .fade-in-up { animation: fadeUp .5s ease both; }
+    @keyframes fadeUp { from{opacity:0; transform:translateY(20px)} to{opacity:1; transform:none} }
+    
+    .scale-in { animation: scaleIn .3s ease both; }
+    @keyframes scaleIn { from{opacity:0; transform:scale(.95)} to{opacity:1; transform:scale(1)} }
+    
+    .pulse-ring {
+      animation: pulseRing 2s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
+    }
+    @keyframes pulseRing {
+      0% { transform: scale(0.8); opacity: 1; }
+      100% { transform: scale(1.4); opacity: 0; }
+    }
+    
+    .shimmer {
+      background: linear-gradient(90deg, #f0f0f0 0%, #e0e0e0 50%, #f0f0f0 100%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+    }
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    
+    .progress-ring {
+      transform: rotate(-90deg);
+      transition: stroke-dashoffset 0.5s ease;
+    }
+    
+    .dropzone.dragover {
+      border-color: #3b6cf6;
+      background: #eef4ff;
+    }
+    
+    .scroll-smooth { scroll-behavior: smooth; }
+    
+    .card-hover {
+      transition: all 0.3s ease;
+    }
+    .card-hover:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(15,23,42,.08);
+    }
+    
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body class="bg-ink-50 min-h-screen font-sans text-ink-700">
+
+<!-- Header -->
+<header class="bg-white border-b border-ink-100 sticky top-0 z-50">
+  <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center shadow-card">
+        <i class="icon icon-brain text-white text-lg"></i>
+      </div>
+      <div>
+        <h1 class="text-lg font-bold text-ink-800">AI简历分析师</h1>
+        <p class="text-xs text-ink-400">智能简历诊断与优化平台</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-4">
+      <span id="apiStatus" class="flex items-center gap-2 text-sm text-ink-500">
+        <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+        <span>演示模式</span>
+      </span>
+    </div>
+  </div>
+</header>
+
+<!-- Main Content -->
+<main class="max-w-7xl mx-auto px-6 py-8">
+  
+  <!-- Intro Section -->
+  <section class="text-center mb-10 fade-in">
+    <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-50 text-brand-600 text-sm font-medium mb-4">
+      <i class="icon icon-sparkles text-sm"></i>
+      AI驱动的简历智能分析
+    </div>
+    <h2 class="text-4xl font-bold text-ink-800 mb-3">
+      让AI帮你精准诊断简历
+    </h2>
+    <p class="text-lg text-ink-500 max-w-2xl mx-auto">
+      上传你的简历和目标岗位JD，AI将为你分析匹配度、识别优势不足、提供专业优化建议
+    </p>
+  </section>
+
+  <!-- Upload & Input Section -->
+  <section class="grid md:grid-cols-2 gap-6 mb-8">
+    
+    <!-- Resume Upload -->
+    <div class="bg-white rounded-2xl border border-ink-100 shadow-card p-6 fade-in-up">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center">
+          <i class="icon icon-file-text text-lg"></i>
+        </div>
+        <div>
+          <h3 class="font-semibold text-ink-800">上传简历</h3>
+          <p class="text-xs text-ink-400">支持 PDF / JPG / PNG / TXT</p>
+        </div>
+      </div>
+      
+      <!-- Dropzone -->
+      <div id="resumeDropzone" class="dropzone border-2 border-dashed border-ink-200 rounded-xl p-8 text-center cursor-pointer hover:border-brand-500 hover:bg-brand-50/30 transition-all">
+        <div class="w-16 h-16 rounded-full bg-ink-100 mx-auto mb-4 flex items-center justify-center">
+          <i class="icon icon-cloud-upload text-2xl text-ink-400"></i>
+        </div>
+        <p class="text-ink-600 font-medium mb-1">拖拽文件到此处</p>
+        <p class="text-sm text-ink-400 mb-4">或点击选择文件</p>
+        <button type="button" id="selectFileBtn" class="px-4 py-2 bg-ink-800 text-white rounded-lg text-sm font-medium hover:bg-ink-900 transition">
+          选择文件
+        </button>
+        <input type="file" id="resumeFile" accept=".pdf,.jpg,.jpeg,.png,.txt" class="hidden" />
+      </div>
+      
+      <!-- File Info (shown after upload) -->
+      <div id="fileInfo" class="hidden mt-4 p-4 rounded-xl bg-emerald-50 border border-emerald-100">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center">
+            <i class="icon icon-check text-lg"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p id="fileName" class="font-medium text-ink-800 truncate"></p>
+            <p id="fileSize" class="text-xs text-ink-500"></p>
+          </div>
+          <button id="removeFileBtn" class="p-2 rounded-lg hover:bg-emerald-100 text-emerald-600 transition">
+            <i class="icon icon-x"></i>
+          </button>
+        </div>
+        <div id="extractedTextPreview" class="mt-3 p-3 bg-white rounded-lg text-sm text-ink-600 max-h-32 overflow-y-auto hidden"></div>
+      </div>
+      
+      <!-- Loading State -->
+      <div id="uploadLoading" class="hidden mt-4 text-center">
+        <div class="inline-flex items-center gap-3 text-ink-500">
+          <div class="w-5 h-5 border-2 border-brand-500 border-t-transparent rounded-full animate-spin"></div>
+          <span id="uploadStatus">正在解析文件...</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- JD Input -->
+    <div class="bg-white rounded-2xl border border-ink-100 shadow-card p-6 fade-in-up" style="animation-delay:0.1s">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+          <i class="icon icon-briefcase text-lg"></i>
+        </div>
+        <div>
+          <h3 class="font-semibold text-ink-800">岗位JD</h3>
+          <p class="text-xs text-ink-400">粘贴目标岗位描述</p>
+        </div>
+      </div>
+      
+      <div class="relative">
+        <textarea 
+          id="jdInput" 
+          rows="10" 
+          placeholder="在此粘贴岗位描述（JD）...&#10;&#10;包含：岗位职责、任职要求、技能要求等"
+          class="w-full px-4 py-3 border border-ink-200 rounded-xl text-sm text-ink-700 placeholder:text-ink-300 focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 transition resize-none"
+        ></textarea>
+        <div class="absolute bottom-3 right-3 text-xs text-ink-400">
+          <span id="jdCharCount">0</span> / 20000
+        </div>
+      </div>
+      
+      <!-- Quick Fill -->
+      <div class="mt-3 flex items-center justify-between">
+        <button id="loadSampleJd" class="text-sm text-brand-600 hover:text-brand-700 flex items-center gap-1">
+          <i class="icon icon-magic text-sm"></i>
+          填入示例JD
+        </button>
+        <button id="clearJd" class="text-sm text-ink-400 hover:text-ink-600 flex items-center gap-1">
+          <i class="icon icon-trash-2 text-sm"></i>
+          清空
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Analyze Button -->
+  <section class="text-center mb-8">
+    <button 
+      id="analyzeBtn" 
+      class="group inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-brand-500 to-brand-600 text-white rounded-xl font-semibold text-lg shadow-card hover:shadow-lg hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+    >
+      <i class="icon icon-zap group-hover:scale-110 transition"></i>
+      <span>开始AI分析</span>
+    </button>
+    <p class="mt-3 text-sm text-ink-400">
+      <i class="icon icon-info text-sm"></i>
+      分析通常需要10-30秒
+    </p>
+  </section>
+
+  <!-- Loading Section -->
+  <section id="loadingSection" class="hidden mb-8">
+    <div class="bg-white rounded-2xl border border-ink-100 shadow-card p-12 text-center">
+      <div class="relative inline-flex items-center justify-center mb-6">
+        <div class="absolute w-20 h-20 rounded-full bg-brand-100 pulse-ring"></div>
+        <div class="w-20 h-20 rounded-full bg-brand-500 flex items-center justify-center relative z-10">
+          <i class="icon icon-brain text-white text-3xl"></i>
+        </div>
+      </div>
+      <h3 class="text-xl font-semibold text-ink-800 mb-2">AI正在分析中...</h3>
+      <p class="text-ink-500 mb-6" id="loadingStatus">正在解析简历内容</p>
+      
+      <!-- Progress Steps -->
+      <div class="max-w-md mx-auto space-y-3 text-left">
+        <div id="step1" class="flex items-center gap-3">
+          <div class="step-icon w-8 h-8 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center text-sm font-medium">1</div>
+          <span class="step-text text-sm text-ink-600">解析简历文本</span>
+        </div>
+        <div id="step2" class="flex items-center gap-3">
+          <div class="step-icon w-8 h-8 rounded-full bg-ink-100 text-ink-400 flex items-center justify-center text-sm font-medium">2</div>
+          <span class="step-text text-sm text-ink-500">解析岗位JD</span>
+        </div>
+        <div id="step3" class="flex items-center gap-3">
+          <div class="step-icon w-8 h-8 rounded-full bg-ink-100 text-ink-400 flex items-center justify-center text-sm font-medium">3</div>
+          <span class="step-text text-sm text-ink-500">分析匹配度</span>
+        </div>
+        <div id="step4" class="flex items-center gap-3">
+          <div class="step-icon w-8 h-8 rounded-full bg-ink-100 text-ink-400 flex items-center justify-center text-sm font-medium">4</div>
+          <span class="step-text text-sm text-ink-500">生成优化建议</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Analysis Report Section -->
+  <section id="reportSection" class="hidden space-y-6">
+    
+    <!-- 最终结论卡片 -->
+    <div id="verdictCard" class="bg-white rounded-2xl border-ink-100 shadow-card p-6 fade-in-up">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-3">
+          <div id="verdictIcon" class="w-12 h-12 rounded-xl flex items-center justify-center"></div>
+          <div>
+            <h3 id="verdictTitle" class="text-lg font-semibold text-ink-800"></h3>
+            <p id="verdictSubtitle" class="text-sm text-ink-500"></p>
+          </div>
+        </div>
+        <div id="verdictBadge" class="tag text-sm"></div>
+      </div>
+      <div class="grid md:grid-cols-3 gap-4 pt-4 border-t border-ink-100">
+        <div>
+          <div class="text-xs text-ink-400 mb-1">面试优先级</div>
+          <div id="interviewPriority" class="text-lg font-semibold text-ink-800"></div>
+        </div>
+        <div>
+          <div class="text-xs text-ink-400 mb-1">预期表现</div>
+          <div id="expectedPerformance" class="text-lg font-semibold text-ink-800"></div>
+        </div>
+        <div>
+          <div class="text-xs text-ink-400 mb-1">分析置信度</div>
+          <div id="confidenceLevel" class="text-lg font-semibold text-ink-800"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 综合评分与匹配矩阵 -->
+    <div class="grid md:grid-cols-5 gap-6">
+      <!-- Overall Score -->
+      <div class="md:col-span-2 bg-white rounded-2xl border-ink-100 shadow-card p-6 fade-in-up">
+        <h3 class="font-semibold text-ink-800 mb-4">综合匹配度</h3>
+        <div class="flex items-center justify-center">
+          <div class="relative w-44 h-44">
+            <svg class="progress-ring w-full h-full" viewBox="0 0 120 120">
+              <circle cx="60" cy="60" r="52" fill="none" stroke="#eceef2" stroke-width="10"/>
+              <circle id="scoreRing" cx="60" cy="60" r="52" fill="none" stroke-width="10"
+                stroke-linecap="round" stroke-dasharray="326.72" stroke-dashoffset="326.72"
+                class="transition-all duration-1000"/>
+            </svg>
+            <div class="absolute inset-0 flex flex-col items-center justify-center">
+              <span id="scoreValue" class="text-4xl font-bold text-ink-800">0</span>
+              <span class="text-xs text-ink-400 mt-1">/ 100</span>
+            </div>
+          </div>
+        </div>
+        <p id="matchConclusion" class="mt-4 text-sm text-ink-500 text-center"></p>
+      </div>
+
+      <!-- 能力匹配矩阵 -->
+      <div class="md:col-span-3 bg-white rounded-2xl border-ink-100 shadow-card p-6 fade-in-up">
+        <h3 class="font-semibold text-ink-800 mb-4">能力匹配矩阵</h3>
+        <div id="matchMatrix" class="space-y-3">
+          <!-- 维度评分将在此渲染 -->
+        </div>
+      </div>
+    </div>
+
+    <!-- JD要求 vs 候选人画像 -->
+    <div class="grid md:grid-cols-2 gap-6">
+      <!-- JD核心要求 -->
+      <div class="bg-white rounded-2xl border-ink-100 shadow-card p-6 fade-in-up">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+            <i class="icon icon-target text-lg"></i>
+          </div>
+          <div>
+            <h3 class="font-semibold text-ink-800">岗位核心要求</h3>
+            <p class="text-xs text-ink-400">从JD提取的关键能力模型</p>
+          </div>
+        </div>
+        <div id="jdRequirements" class="space-y-3">
+          <!-- JD要求将在此渲染 -->
+        </div>
+      </div>
+
+      <!-- 候选人能力画像 -->
+      <div class="bg-white rounded-2xl border-ink-100 shadow-card p-6 fade-in-up">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center">
+            <i class="icon icon-user-check text-lg"></i>
+          </div>
+          <div>
+            <h3 class="font-semibold text-ink-800">候选人能力画像</h3>
+            <p class="text-xs text-ink-400">从简历提取的能力评估</p>
+          </div>
+        </div>
+        <div id="candidateProfile" class="space-y-3">
+          <!-- 候选人画像将在此渲染 -->
+        </div>
+      </div>
+    </div>
+
+    <!-- 差距与风险分析 -->
+    <div class="grid md:grid-cols-2 gap-6">
+      <!-- 差距分析 -->
+      <div class="bg-white rounded-2xl border-ink-100 shadow-card p-6 fade-in-up">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
+            <i class="icon icon-alert-triangle text-lg"></i>
+          </div>
+          <h3 class="font-semibold text-ink-800">差距与风险分析</h3>
+        </div>
+        <div id="gapAnalysis" class="space-y-3">
+          <!-- 差距分析将在此渲染 -->
+        </div>
+      </div>
+
+      <!-- 意外亮点 -->
+      <div class="bg-white rounded-2xl border-ink-100 shadow-card p-6 fade-in-up">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+            <i class="icon icon-sparkles text-lg"></i>
+          </div>
+          <h3 class="font-semibold text-ink-800">意外亮点</h3>
+        </div>
+        <div id="surpriseHighlights" class="space-y-3">
+          <!-- 亮点将在此渲染 -->
+        </div>
+      </div>
+    </div>
+
+    <!-- 优先级修改建议 -->
+    <div class="bg-white rounded-2xl border-ink-100 shadow-card p-6 fade-in-up">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="w-10 h-10 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center">
+          <i class="icon icon-list-checks text-lg"></i>
+        </div>
+        <h3 class="font-semibold text-ink-800">优先级修改建议</h3>
+      </div>
+      <div class="grid md:grid-cols-3 gap-4">
+        <!-- P0 - 紧急且重要 -->
+        <div class="rounded-xl border-2 border-rose-200 bg-rose-50/50 p-4">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="px-2 py-1 rounded-md bg-rose-500 text-white text-xs font-bold">P0</span>
+            <span class="text-sm font-medium text-rose-700">紧急且重要</span>
+          </div>
+          <div id="urgentSuggestions" class="space-y-2">
+            <!-- 紧急建议将在此渲染 -->
+          </div>
+        </div>
+
+        <!-- P1 - 重要不紧急 -->
+        <div class="rounded-xl border-2 border-amber-200 bg-amber-50/50 p-4">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="px-2 py-1 rounded-md bg-amber-500 text-white text-xs font-bold">P1</span>
+            <span class="text-sm font-medium text-amber-700">重要不紧急</span>
+          </div>
+          <div id="importantSuggestions" class="space-y-2">
+            <!-- 重要建议将在此渲染 -->
+          </div>
+        </div>
+
+        <!-- P2 - 锦上添花 -->
+        <div class="rounded-xl border-2 border-blue-200 bg-blue-50/50 p-4">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="px-2 py-1 rounded-md bg-blue-500 text-white text-xs font-bold">P2</span>
+            <span class="text-sm font-medium text-blue-700">锦上添花</span>
+          </div>
+          <div id="niceToHaveSuggestions" class="space-y-2">
+            <!-- 加分建议将在此渲染 -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 面试建议 -->
+    <div id="interviewSection" class="bg-gradient-to-br from-brand-50 to-ink-50 rounded-2xl border border-brand-100 p-6 fade-in-up">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-xl bg-brand-500 text-white flex items-center justify-center">
+          <i class="icon icon-message-square-question text-lg"></i>
+        </div>
+        <h3 class="font-semibold text-ink-800">面试重点问题</h3>
+      </div>
+      <div id="keyQuestions" class="space-y-2">
+        <!-- 面试问题将在此渲染 -->
+      </div>
+    </div>
+
+    <!-- Note (if mock mode) -->
+    <div id="mockNote" class="hidden bg-amber-50 border border-amber-200 rounded-xl p-4">
+      <div class="flex items-start gap-3">
+        <i class="icon icon-info text-amber-500 mt-0.5"></i>
+        <div>
+          <p class="text-sm text-amber-800 font-medium">演示模式</p>
+          <p class="text-sm text-amber-700 mt-1">当前使用模拟数据分析。配置AI API Key后将获得真正的专家级分析。</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="flex justify-center gap-4 pt-4 flex-wrap">
+      <button id="optimizeBtn" class="px-6 py-3 bg-gradient-to-r from-brand-500 to-brand-600 text-white rounded-xl font-medium hover:from-brand-600 hover:to-brand-700 transition flex items-center gap-2 shadow-lg shadow-brand-500/20">
+        <i class="icon icon-magic"></i>
+        优化我的简历
+      </button>
+      <button id="restartBtn" class="px-6 py-3 border border-ink-200 bg-white rounded-xl font-medium text-ink-700 hover:bg-ink-50 transition flex items-center gap-2">
+        <i class="icon icon-refresh-cw"></i>
+        重新分析
+      </button>
+      <button id="exportBtn" class="px-6 py-3 bg-ink-800 text-white rounded-xl font-medium hover:bg-ink-900 transition flex items-center gap-2">
+        <i class="icon icon-download"></i>
+        导出报告
+      </button>
+    </div>
+  </section>
+
+  <!-- Resume Optimization Section -->
+  <section id="optimizeSection" class="hidden space-y-6">
+    
+    <!-- Optimization Loading -->
+    <section id="optimizeLoading" class="hidden mb-8">
+      <div class="bg-white rounded-2xl border border-ink-100 shadow-card p-12 text-center">
+        <div class="relative inline-flex items-center justify-center mb-6">
+          <div class="absolute w-20 h-20 rounded-full bg-gradient-to-r from-brand-100 to-emerald-100 pulse-ring"></div>
+          <div class="w-20 h-20 rounded-full bg-gradient-to-r from-brand-500 to-brand-600 flex items-center justify-center relative z-10">
+            <i class="icon icon-wand-2 text-white text-3xl"></i>
+          </div>
+        </div>
+        <h3 class="text-xl font-semibold text-ink-800 mb-2">AI正在优化简历...</h3>
+        <p class="text-ink-500" id="optimizeLoadingStatus">正在分析岗位要求，准备优化方案</p>
+      </div>
+    </section>
+
+    <!-- Optimization Result -->
+    <div id="optimizeResult" class="space-y-6">
+      
+      <!-- AI vs Mock 提示条 -->
+      <div id="sourceBadge" class="hidden rounded-xl p-3 flex items-center gap-3"></div>
+      
+      <!-- 优化概览 -->
+      <div class="bg-white rounded-2xl border-ink-100 shadow-card p-6 fade-in-up">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white flex items-center justify-center">
+              <i class="icon icon-trending-up text-xl"></i>
+            </div>
+            <div>
+              <h3 class="text-lg font-semibold text-ink-800">简历优化完成</h3>
+              <p class="text-sm text-ink-500">基于STAR原则的专业优化建议</p>
+            </div>
+          </div>
+          <div id="improvementCount" class="text-right">
+            <div class="text-2xl font-bold text-emerald-600">+<span id="improvementNum">0</span></div>
+            <div class="text-xs text-ink-400">项优化改进</div>
+          </div>
+        </div>
+        <div id="improvementList" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
+      </div>
+
+      <!-- 个人总结优化 -->
+      <div class="bg-white rounded-2xl border-ink-100 shadow-card p-6 fade-in-up">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
+            <i class="icon icon-user text-lg"></i>
+          </div>
+          <h3 class="font-semibold text-ink-800">个人总结优化</h3>
+        </div>
+        <div class="grid md:grid-cols-2 gap-4">
+          <div class="p-4 rounded-xl bg-ink-50 border border-ink-100">
+            <div class="text-xs text-ink-400 mb-2 font-medium">原文</div>
+            <p id="summaryOriginal" class="text-sm text-ink-600"></p>
+          </div>
+          <div class="p-4 rounded-xl bg-gradient-to-br from-brand-50 to-emerald-50 border border-brand-100">
+            <div class="text-xs text-brand-600 mb-2 font-medium flex items-center gap-1">
+              <i class="icon icon-sparkles text-xs"></i>
+              优化后
+            </div>
+            <p id="summaryOptimized" class="text-sm text-ink-700"></p>
+          </div>
+        </div>
+        <div class="mt-3">
+          <div class="text-xs text-ink-400 mb-2">核心关键词</div>
+          <div id="summaryKeywords" class="flex flex-wrap gap-2"></div>
+        </div>
+      </div>
+
+      <!-- 项目描述优化 -->
+      <div class="bg-white rounded-2xl border-ink-100 shadow-card p-6 fade-in-up">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+            <i class="icon icon-folder text-lg"></i>
+          </div>
+          <h3 class="font-semibold text-ink-800">项目描述优化（STAR法则）</h3>
+        </div>
+        <div id="projectsOptimized" class="space-y-4"></div>
+      </div>
+
+      <!-- 工作经历优化 -->
+      <div class="bg-white rounded-2xl border-ink-100 shadow-card p-6 fade-in-up">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+            <i class="icon icon-briefcase text-lg"></i>
+          </div>
+          <h3 class="font-semibold text-ink-800">工作经历优化</h3>
+        </div>
+        <div id="experienceOptimized" class="space-y-4"></div>
+      </div>
+
+      <!-- 技能描述优化 -->
+      <div class="bg-white rounded-2xl border-ink-100 shadow-card p-6 fade-in-up">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center">
+            <i class="icon icon-code text-lg"></i>
+          </div>
+          <h3 class="font-semibold text-ink-800">技能描述优化</h3>
+        </div>
+        <div class="grid md:grid-cols-2 gap-6">
+          <div>
+            <h4 class="text-sm font-medium text-ink-600 mb-3">技术技能</h4>
+            <div id="technicalSkillsOptimized" class="space-y-2"></div>
+          </div>
+          <div>
+            <h4 class="text-sm font-medium text-ink-600 mb-3">软技能</h4>
+            <div id="softSkillsOptimized" class="space-y-2"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 完整优化版本 -->
+      <div class="bg-gradient-to-br from-brand-50 to-emerald-50 rounded-2xl border border-brand-100 p-6 fade-in-up">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-white shadow-card flex items-center justify-center">
+              <i class="icon icon-file-text text-brand-600 text-lg"></i>
+            </div>
+            <h3 class="font-semibold text-ink-800">优化后完整简历</h3>
+          </div>
+          <button id="copyOptimizedBtn" class="px-4 py-2 bg-white rounded-lg text-sm font-medium text-ink-700 hover:bg-ink-50 transition flex items-center gap-2">
+            <i class="icon icon-copy"></i>
+            复制全文
+          </button>
+        </div>
+        <div id="finalOptimizedText" class="bg-white rounded-xl p-5 text-sm text-ink-700 whitespace-pre-wrap max-h-96 overflow-y-auto"></div>
+      </div>
+
+      <!-- 优化操作按钮 -->
+      <div class="flex justify-center gap-4">
+        <button id="backToReportBtn" class="px-6 py-3 border border-ink-200 bg-white rounded-xl font-medium text-ink-700 hover:bg-ink-50 transition flex items-center gap-2">
+          <i class="icon icon-arrow-left"></i>
+          返回分析报告
+        </button>
+        <button id="exportOptimizedBtn" class="px-6 py-3 bg-emerald-600 text-white rounded-xl font-medium hover:bg-emerald-700 transition flex items-center gap-2">
+          <i class="icon icon-download"></i>
+          下载优化版简历
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Usage Tips -->
+  <section class="mt-12 bg-gradient-to-br from-brand-50 to-ink-50 rounded-2xl p-8 border border-brand-100">
+    <h3 class="text-lg font-semibold text-ink-800 mb-6 flex items-center gap-2">
+      <i class="icon icon-tips text-brand-500"></i>
+      使用提示
+    </h3>
+    <div class="grid md:grid-cols-3 gap-6">
+      <div class="flex gap-3">
+        <div class="w-8 h-8 rounded-lg bg-white shadow-card flex items-center justify-center flex-shrink-0">
+          <span class="text-brand-600 font-bold text-sm">1</span>
+        </div>
+        <div>
+          <h4 class="font-medium text-ink-800 mb-1">准备简历</h4>
+          <p class="text-sm text-ink-500">确保简历文件清晰可读，推荐使用PDF格式</p>
+        </div>
+      </div>
+      <div class="flex gap-3">
+        <div class="w-8 h-8 rounded-lg bg-white shadow-card flex items-center justify-center flex-shrink-0">
+          <span class="text-brand-600 font-bold text-sm">2</span>
+        </div>
+        <div>
+          <h4 class="font-medium text-ink-800 mb-1">粘贴JD</h4>
+          <p class="text-sm text-ink-500">完整的岗位描述将帮助AI提供更精准的分析</p>
+        </div>
+      </div>
+      <div class="flex gap-3">
+        <div class="w-8 h-8 rounded-lg bg-white shadow-card flex items-center justify-center flex-shrink-0">
+          <span class="text-brand-600 font-bold text-sm">3</span>
+        </div>
+        <div>
+          <h4 class="font-medium text-ink-800 mb-1">查看报告</h4>
+          <p class="text-sm text-ink-500">根据AI建议优化简历，提升求职竞争力</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- Footer -->
+<footer class="mt-16 py-8 border-t border-ink-100 bg-white">
+  <div class="max-w-7xl mx-auto px-6 text-center text-sm text-ink-400">
+    <p>AI简历分析师 · 智能简历诊断与优化平台</p>
+    <p class="mt-2">让AI帮你精准定位简历问题，拿下理想Offer</p>
+  </div>
+</footer>
+
+<script>
+  // ==================== Configuration ====================
+  const API_BASE = '/api';  // 后端API基础地址
+  let USE_MOCK = true;      // 动态判断：有后端则使用真实解析
+  
+  // ==================== State ====================
+  const state = {
+    resumeFile: null,
+    extractedText: '',
+    jdText: '',
+    analysisResult: null,
+    isAnalyzing: false
+  };
+
+  // ==================== DOM Elements ====================
+  const dropzone = document.getElementById('resumeDropzone');
+  const fileInput = document.getElementById('resumeFile');
+  const selectFileBtn = document.getElementById('selectFileBtn');
+  const fileInfo = document.getElementById('fileInfo');
+  const fileName = document.getElementById('fileName');
+  const fileSize = document.getElementById('fileSize');
+  const removeFileBtn = document.getElementById('removeFileBtn');
+  const extractedTextPreview = document.getElementById('extractedTextPreview');
+  const uploadLoading = document.getElementById('uploadLoading');
+  const uploadStatus = document.getElementById('uploadStatus');
+  const jdInput = document.getElementById('jdInput');
+  const jdCharCount = document.getElementById('jdCharCount');
+  const loadSampleJd = document.getElementById('loadSampleJd');
+  const clearJd = document.getElementById('clearJd');
+  const analyzeBtn = document.getElementById('analyzeBtn');
+  const loadingSection = document.getElementById('loadingSection');
+  const loadingStatus = document.getElementById('loadingStatus');
+  const reportSection = document.getElementById('reportSection');
+  const restartBtn = document.getElementById('restartBtn');
+  const exportBtn = document.getElementById('exportBtn');
+  const apiStatus = document.getElementById('apiStatus');
+
+  // ==================== File Upload ====================
+  
+  // 点击选择文件
+  selectFileBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    fileInput.click();
+  });
+
+  dropzone.addEventListener('click', () => {
+    fileInput.click();
+  });
+
+  // 拖拽上传
+  dropzone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropzone.classList.add('dragover');
+  });
+
+  dropzone.addEventListener('dragleave', () => {
+    dropzone.classList.remove('dragover');
+  });
+
+  dropzone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropzone.classList.remove('dragover');
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      handleFile(files[0]);
+    }
+  });
+
+  // 文件选择
+  fileInput.addEventListener('change', (e) => {
+    if (e.target.files.length > 0) {
+      handleFile(e.target.files[0]);
+    }
+  });
+
+  // 移除文件
+  removeFileBtn.addEventListener('click', () => {
+    state.resumeFile = null;
+    state.extractedText = '';
+    fileInput.value = '';
+    fileInfo.classList.add('hidden');
+    extractedTextPreview.classList.add('hidden');
+    updateAnalyzeBtn();
+  });
+
+  // 处理文件上传
+  async function handleFile(file) {
+    const allowedTypes = ['.pdf', '.jpg', '.jpeg', '.png', '.txt'];
+    const ext = '.' + file.name.split('.').pop().toLowerCase();
+    
+    if (!allowedTypes.includes(ext)) {
+      alert(`不支持的文件类型！支持的类型: PDF, JPG, PNG, TXT`);
+      return;
+    }
+    
+    if (file.size > 10 * 1024 * 1024) {
+      alert('文件过大！请上传10MB以内的文件');
+      return;
+    }
+
+    state.resumeFile = file;
+    
+    // 显示loading
+    uploadLoading.classList.remove('hidden');
+    uploadStatus.textContent = '正在上传文件...';
+    
+    // 显示文件信息
+    fileName.textContent = file.name;
+    fileSize.textContent = formatFileSize(file.size);
+    fileInfo.classList.remove('hidden');
+    
+    try {
+      // 优先使用后端真实解析（即使USE_MOCK为true也尝试）
+      let parsed = false;
+      
+      // 先尝试后端真实解析
+      try {
+        uploadStatus.textContent = '正在上传并解析文件...';
+        const text = await uploadAndParseFile(file);
+        if (text && text.trim()) {
+          state.extractedText = text;
+          showExtractedText(text);
+          USE_MOCK = false; // 后端可用，切换到真实模式
+          parsed = true;
+        }
+      } catch (uploadError) {
+        console.warn('后端解析失败，尝试本地解析:', uploadError.message);
+      }
+      
+      // 后端失败或返回空，尝试本地解析
+      if (!parsed) {
+        if (ext === '.txt') {
+          const text = await readTxtFile(file);
+          state.extractedText = text;
+          showExtractedText(text);
+          parsed = true;
+        }
+      }
+      
+      // 都失败了，使用mock数据
+      if (!parsed) {
+        uploadStatus.textContent = '解析服务暂不可用，使用演示数据...';
+        await sleep(500);
+        state.extractedText = getMockResumeText(file.name);
+        showExtractedText(state.extractedText);
+        console.warn('使用Mock数据，用户需要重新上传真实文件');
+      }
+    } catch (error) {
+      console.error('文件处理失败:', error);
+      alert('文件处理失败: ' + error.message);
+      fileInfo.classList.add('hidden');
+    } finally {
+      uploadLoading.classList.add('hidden');
+      updateAnalyzeBtn();
+    }
+  }
+
+  // 上传并解析文件
+  async function uploadAndParseFile(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetch(`${API_BASE}/upload/resume`, {
+      method: 'POST',
+      body: formData
+    });
+
+    if (!response.ok) {
+      throw new Error('上传失败');
+    }
+
+    const data = await response.json();
+    return data.extractedText;
+  }
+
+  // 读取TXT文件
+  function readTxtFile(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve(e.target.result);
+      reader.onerror = reject;
+      reader.readAsText(file, 'UTF-8');
+    });
+  }
+
+  // 显示提取的文本预览
+  function showExtractedText(text) {
+    if (text && text.trim()) {
+      const preview = text.length > 200 ? text.substring(0, 200) + '...' : text;
+      extractedTextPreview.textContent = '📄 已解析文本预览:\n' + preview;
+      extractedTextPreview.classList.remove('hidden');
+    }
+  }
+
+  // ==================== JD Input ====================
+  
+  jdInput.addEventListener('input', (e) => {
+    state.jdText = e.target.value;
+    jdCharCount.textContent = state.jdText.length;
+    updateAnalyzeBtn();
+  });
+
+  loadSampleJd.addEventListener('click', () => {
+    const sampleJd = `【岗位名称】高级前端开发工程师
+
+【岗位职责】
+1. 负责公司核心产品的前端开发与维护
+2. 参与前端架构设计与技术选型
+3. 优化页面性能，提升用户体验
+4. 与产品、设计、后端团队紧密协作
+
+【任职要求】
+1. 本科及以上学历，计算机相关专业
+2. 3年以上前端开发经验
+3. 精通Vue/React等主流框架
+4. 熟悉TypeScript、Webpack/Vite等工具链
+5. 了解Node.js，具备全栈开发能力
+
+【加分项】
+- 有大型项目经验
+- 了解微前端架构
+- 有性能优化经验
+- 具备团队管理经验`;
+    
+    jdInput.value = sampleJd;
+    state.jdText = sampleJd;
+    jdCharCount.textContent = sampleJd.length;
+    updateAnalyzeBtn();
+  });
+
+  clearJd.addEventListener('click', () => {
+    jdInput.value = '';
+    state.jdText = '';
+    jdCharCount.textContent = '0';
+    updateAnalyzeBtn();
+  });
+
+  // ==================== Analyze Button ====================
+  
+  function updateAnalyzeBtn() {
+    const canAnalyze = state.extractedText.trim().length > 0 && state.jdText.trim().length > 0;
+    analyzeBtn.disabled = !canAnalyze;
+  }
+
+  analyzeBtn.addEventListener('click', async () => {
+    if (state.isAnalyzing) return;
+    if (!state.extractedText.trim() || !state.jdText.trim()) return;
+
+    state.isAnalyzing = true;
+    analyzeBtn.disabled = true;
+    
+    // 显示loading
+    reportSection.classList.add('hidden');
+    loadingSection.classList.remove('hidden');
+    window.scrollTo({ top: loadingSection.offsetTop - 100, behavior: 'smooth' });
+
+    try {
+      const result = await performAnalysis();
+      state.analysisResult = result;
+      displayReport(result);
+    } catch (error) {
+      console.error('分析失败:', error);
+      alert('分析失败: ' + error.message);
+    } finally {
+      state.isAnalyzing = false;
+      analyzeBtn.disabled = false;
+      loadingSection.classList.add('hidden');
+    }
+  });
+
+  // 执行分析
+  async function performAnalysis() {
+    // 显示进度步骤
+    const steps = ['step1', 'step2', 'step3', 'step4'];
+    const statusMessages = [
+      '正在解析简历文本...',
+      '正在解析岗位JD...',
+      '正在分析匹配度...',
+      '正在生成优化建议...'
+    ];
+
+    for (let i = 0; i < steps.length; i++) {
+      loadingStatus.textContent = statusMessages[i];
+      updateStepStatus(i);
+      await sleep(800);
+    }
+
+    // 优先尝试后端真实分析
+    try {
+      const response = await fetch(`${API_BASE}/analysis`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          resumeText: state.extractedText,
+          jdText: state.jdText
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        USE_MOCK = false;
+        return data.analysis;
+      }
+    } catch (uploadError) {
+      console.warn('后端分析失败，使用本地分析:', uploadError.message);
+    }
+    
+    // 降级到mock分析
+    return generateMockAnalysis(state.extractedText, state.jdText);
+  }
+
+  // 更新步骤状态
+  function updateStepStatus(completedStep) {
+    const steps = ['step1', 'step2', 'step3', 'step4'];
+    steps.forEach((stepId, index) => {
+      const step = document.getElementById(stepId);
+      const icon = step.querySelector('.step-icon');
+      const text = step.querySelector('.step-text');
+      
+      if (index < completedStep) {
+        // 已完成
+        icon.className = 'step-icon w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-sm';
+        icon.textContent = '✓';
+        text.className = 'step-text text-sm text-ink-500 line-through';
+      } else if (index === completedStep) {
+        // 进行中
+        icon.className = 'step-icon w-8 h-8 rounded-full bg-brand-500 text-white flex items-center justify-center text-sm font-medium animate-pulse';
+        icon.textContent = index + 1;
+        text.className = 'step-text text-sm text-ink-700 font-medium';
+      } else {
+        // 等待
+        icon.className = 'step-icon w-8 h-8 rounded-full bg-ink-100 text-ink-400 flex items-center justify-center text-sm font-medium';
+        icon.textContent = index + 1;
+        text.className = 'step-text text-sm text-ink-500';
+      }
+    });
+  }
+
+  // ==================== Display Report ====================
+  
+  function displayReport(result) {
+    reportSection.classList.remove('hidden');
+    
+    // 显示mock提示
+    if (result.note) {
+      document.getElementById('mockNote').classList.remove('hidden');
+    }
+    
+    // 渲染最终结论
+    renderVerdict(result.finalVerdict, result.meta);
+    
+    // 渲染综合评分
+    renderOverallScore(result.matchMatrix);
+    
+    // 渲染能力匹配矩阵
+    renderMatchMatrix(result.matchMatrix?.dimensionScores);
+    
+    // 渲染JD要求
+    renderJdRequirements(result.jdRequirements);
+    
+    // 渲染候选人画像
+    renderCandidateProfile(result.candidateProfile);
+    
+    // 渲染差距分析
+    renderGapAnalysis(result.gapAnalysis);
+    
+    // 渲染建议
+    renderSuggestions(result.suggestions);
+    
+    // 渲染面试问题
+    renderKeyQuestions(result.finalVerdict?.keyQuestions);
+    
+    // 滚动到报告
+    setTimeout(() => {
+      reportSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 500);
+  }
+
+  function renderVerdict(verdict, meta) {
+    const card = document.getElementById('verdictCard');
+    const icon = document.getElementById('verdictIcon');
+    const title = document.getElementById('verdictTitle');
+    const subtitle = document.getElementById('verdictSubtitle');
+    const badge = document.getElementById('verdictBadge');
+    
+    if (!verdict) return;
+    
+    const rec = verdict.recommendation || '谨慎考虑';
+    title.textContent = rec;
+    
+    // 根据推荐等级设置样式
+    const recStyles = {
+      '强烈推荐': { icon: 'icon-rocket', bg: 'bg-emerald-100', color: 'text-emerald-600', badgeBg: 'bg-emerald-500' },
+      '推荐': { icon: 'icon-check-circle', bg: 'bg-blue-100', color: 'text-blue-600', badgeBg: 'bg-blue-500' },
+      '谨慎考虑': { icon: 'icon-alert-circle', bg: 'bg-amber-100', color: 'text-amber-600', badgeBg: 'bg-amber-500' },
+      '不推荐': { icon: 'icon-x-circle', bg: 'bg-rose-100', color: 'text-rose-600', badgeBg: 'bg-rose-500' }
+    };
+    
+    const style = recStyles[rec] || recStyles['谨慎考虑'];
+    icon.className = `w-12 h-12 rounded-xl flex items-center justify-center ${style.bg} ${style.color}`;
+    icon.innerHTML = `<i class="icon ${style.icon} text-xl"></i>`;
+    
+    subtitle.textContent = `${meta?.candidateName || '候选人'} · 应聘 ${meta?.jdPosition || '目标岗位'}`;
+    
+    badge.className = `tag text-sm text-white ${style.badgeBg}`;
+    badge.textContent = rec;
+    
+    // 详细信息
+    const priorityMap = { 1: '高', 2: '中', 3: '低' };
+    const priority = verdict.interviewPriority;
+    document.getElementById('interviewPriority').textContent = priority 
+      ? (typeof priority === 'number' ? (priorityMap[priority] || `${priority}级`) : priority) 
+      : '-';
+    document.getElementById('expectedPerformance').textContent = verdict.expectedPerformance || '-';
+    document.getElementById('confidenceLevel').textContent = meta?.confidence 
+      ? (typeof meta.confidence === 'number' && meta.confidence <= 1 
+          ? `${Math.round(meta.confidence * 100)}%` 
+          : meta.confidence)
+      : '-';
+  }
+
+  function renderOverallScore(matchMatrix) {
+    if (!matchMatrix) return;
+    
+    const score = matchMatrix.overallScore || 0;
+    const scoreRing = document.getElementById('scoreRing');
+    const scoreValue = document.getElementById('scoreValue');
+    const conclusion = document.getElementById('matchConclusion');
+    
+    const circumference = 326.72;
+    const offset = circumference - (score / 100) * circumference;
+    
+    // 动画
+    scoreRing.style.strokeDashoffset = offset;
+    scoreRing.style.stroke = getScoreColor(score);
+    
+    let current = 0;
+    const step = Math.max(1, Math.ceil(score / 40));
+    const timer = setInterval(() => {
+      current += step;
+      if (current >= score) {
+        current = score;
+        clearInterval(timer);
+      }
+      scoreValue.textContent = current;
+    }, 30);
+    
+    conclusion.textContent = matchMatrix.conclusion || '';
+  }
+
+  function getScoreColor(score) {
+    if (score >= 85) return '#10b981';
+    if (score >= 70) return '#3b82f6';
+    if (score >= 50) return '#f59e0b';
+    return '#f43f5e';
+  }
+
+  function renderMatchMatrix(dimensionScores) {
+    const container = document.getElementById('matchMatrix');
+    if (!dimensionScores || Object.keys(dimensionScores).length === 0) {
+      container.innerHTML = '<p class="text-sm text-ink-400">暂无数据</p>';
+      return;
+    }
+    
+    const dimensionNames = {
+      technical: '技术能力',
+      project: '项目经验',
+      product: '产品/业务理解',
+      industry: '行业经验',
+      softSkills: '软技能'
+    };
+    
+    container.innerHTML = '';
+    Object.entries(dimensionScores).forEach(([key, value]) => {
+      const score = value.score || 0;
+      const weight = (value.weight * 100).toFixed(0);
+      const name = dimensionNames[key] || key;
+      
+      const row = document.createElement('div');
+      row.className = 'flex items-center gap-3';
+      row.innerHTML = `
+        <div class="w-24 text-sm text-ink-600 flex-shrink-0">${name}</div>
+        <div class="flex-1 h-6 bg-ink-100 rounded-full overflow-hidden relative">
+          <div class="h-full rounded-full transition-all duration-1000" 
+               style="width: ${score}%; background: ${getScoreColor(score)};"></div>
+          <span class="absolute inset-0 flex items-center justify-center text-xs font-medium text-ink-700">
+            ${score}分
+          </span>
+        </div>
+        <div class="w-16 text-xs text-ink-400">权重${weight}%</div>
+      `;
+      container.appendChild(row);
+      
+      if (value.detail) {
+        const detail = document.createElement('div');
+        detail.className = 'text-xs text-ink-400 pl-27 ml-24 -mt-1';
+        detail.style.paddingLeft = '7rem';
+        detail.textContent = value.detail;
+        container.appendChild(detail);
+      }
+    });
+  }
+
+  function renderJdRequirements(jdRequirements) {
+    const container = document.getElementById('jdRequirements');
+    if (!jdRequirements) {
+      container.innerHTML = '<p class="text-sm text-ink-400">暂无数据</p>';
+      return;
+    }
+    
+    container.innerHTML = '';
+    
+    // 必备技能
+    if (jdRequirements.mustHaveSkills?.length > 0) {
+      const section = createSection('必备技能', 'high');
+      const tagsDiv = document.createElement('div');
+      tagsDiv.className = 'flex flex-wrap gap-1.5';
+      
+      jdRequirements.mustHaveSkills.slice(0, 8).forEach(skill => {
+        const tag = document.createElement('span');
+        tag.className = 'tag bg-amber-100 text-amber-700 text-xs';
+        tag.textContent = typeof skill === 'string' ? skill : skill.skill;
+        tagsDiv.appendChild(tag);
+      });
+      
+      section.appendChild(tagsDiv);
+      container.appendChild(section);
+    }
+    
+    // 经验要求
+    if (jdRequirements.mustHaveExperience?.length > 0) {
+      const section = createSection('经验要求', 'medium');
+      const list = document.createElement('ul');
+      list.className = 'text-xs text-ink-600 space-y-1';
+      jdRequirements.mustHaveExperience.slice(0, 3).forEach(exp => {
+        const li = document.createElement('li');
+        li.textContent = '• ' + exp;
+        list.appendChild(li);
+      });
+      section.appendChild(list);
+      container.appendChild(section);
+    }
+    
+    // 学历要求
+    if (jdRequirements.mustHaveEducation) {
+      const section = createSection('学历要求', 'medium');
+      const p = document.createElement('p');
+      p.className = 'text-xs text-ink-600';
+      p.textContent = jdRequirements.mustHaveEducation;
+      section.appendChild(p);
+      container.appendChild(section);
+    }
+    
+    // 核心职责
+    if (jdRequirements.coreResponsibilities?.length > 0) {
+      const section = createSection('核心职责', 'medium');
+      const list = document.createElement('ul');
+      list.className = 'text-xs text-ink-600 space-y-1';
+      jdRequirements.coreResponsibilities.slice(0, 3).forEach(resp => {
+        const li = document.createElement('li');
+        li.textContent = '• ' + resp;
+        list.appendChild(li);
+      });
+      section.appendChild(list);
+      container.appendChild(section);
+    }
+  }
+
+  function createSection(title, level) {
+    const div = document.createElement('div');
+    div.className = 'border-l-2 border-brand-500 pl-3';
+    div.innerHTML = `<div class="text-xs font-medium text-ink-700 mb-1">${title}</div>`;
+    return div;
+  }
+
+  function renderCandidateProfile(profile) {
+    const container = document.getElementById('candidateProfile');
+    if (!profile) {
+      container.innerHTML = '<p class="text-sm text-ink-400">暂无数据</p>';
+      return;
+    }
+    
+    container.innerHTML = '';
+    
+    // 技术技能
+    if (profile.technicalSkills?.length > 0) {
+      const section = createSection('技术技能评估', 'high');
+      const skillsList = document.createElement('div');
+      skillsList.className = 'space-y-1.5';
+      
+      profile.technicalSkills.slice(0, 6).forEach(skill => {
+        const skillDiv = document.createElement('div');
+        skillDiv.className = 'flex items-center justify-between text-xs';
+        skillDiv.innerHTML = `
+          <span class="text-ink-700">${skill.skill}</span>
+          <span class="tag ${getLevelColor(skill.level)} text-xs">${skill.level}</span>
+        `;
+        skillsList.appendChild(skillDiv);
+      });
+      
+      section.appendChild(skillsList);
+      container.appendChild(section);
+    }
+    
+    // 项目质量
+    if (profile.projectQuality) {
+      const section = createSection('项目经验质量', 'high');
+      const pq = profile.projectQuality;
+      
+      const grid = document.createElement('div');
+      grid.className = 'grid grid-cols-2 gap-2 text-xs';
+      grid.innerHTML = `
+        <div><span class="text-ink-400">项目数：</span><span class="text-ink-700">${pq.totalProjects || '-'}</span></div>
+        <div><span class="text-ink-400">复杂度：</span><span class="text-ink-700">${pq.complexityLevel || '-'}</span></div>
+        <div class="col-span-2"><span class="text-ink-400">亮点项目：</span><span class="text-ink-700">${pq.highlightProject || '-'}</span></div>
+        <div class="col-span-2"><span class="text-ink-400">角色深度：</span><span class="text-ink-700">${pq.roleDepth || '-'}</span></div>
+      `;
+      
+      section.appendChild(grid);
+      container.appendChild(section);
+    }
+    
+    // 量化成果
+    if (profile.quantifiedResults?.length > 0) {
+      const section = createSection('量化成果', 'high');
+      const list = document.createElement('ul');
+      list.className = 'text-xs text-ink-600 space-y-1';
+      profile.quantifiedResults.slice(0, 3).forEach(result => {
+        const li = document.createElement('li');
+        li.className = 'flex items-start gap-1';
+        li.innerHTML = `<i class="icon icon-bar-chart-2 text-brand-500 text-xs mt-0.5"></i><span>${result}</span>`;
+        list.appendChild(li);
+      });
+      section.appendChild(list);
+      container.appendChild(section);
+    }
+  }
+
+  function getLevelColor(level) {
+    const colors = {
+      '专家': 'bg-emerald-100 text-emerald-700',
+      '精通': 'bg-blue-100 text-blue-700',
+      '熟练': 'bg-brand-100 text-brand-700',
+      '入门': 'bg-ink-100 text-ink-500'
+    };
+    return colors[level] || 'bg-ink-100 text-ink-500';
+  }
+
+  function renderGapAnalysis(gapAnalysis) {
+    const container = document.getElementById('gapAnalysis');
+    if (!gapAnalysis) {
+      container.innerHTML = '<p class="text-sm text-ink-400">暂无数据</p>';
+      return;
+    }
+    
+    container.innerHTML = '';
+    
+    // 致命差距
+    if (gapAnalysis.criticalGaps?.length > 0) {
+      const section = document.createElement('div');
+      section.className = 'mb-4';
+      section.innerHTML = '<div class="text-xs font-medium text-rose-600 mb-2">致命差距</div>';
+      
+      gapAnalysis.criticalGaps.slice(0, 3).forEach(gap => {
+        const div = document.createElement('div');
+        div.className = 'bg-rose-50 border border-rose-100 rounded-lg p-3 mb-2';
+        div.innerHTML = `
+          <div class="flex items-start gap-2">
+            <i class="icon icon-x-circle text-rose-500 mt-0.5"></i>
+            <div class="flex-1">
+              <div class="text-sm font-medium text-ink-800">${gap.gap}</div>
+              <div class="text-xs text-ink-500 mt-1">${gap.suggestion || ''}</div>
+            </div>
+          </div>
+        `;
+        section.appendChild(div);
+      });
+      container.appendChild(section);
+    }
+    
+    // 能力短板
+    if (gapAnalysis.weaknessAreas?.length > 0) {
+      const section = document.createElement('div');
+      section.className = 'mb-4';
+      section.innerHTML = '<div class="text-xs font-medium text-amber-600 mb-2">能力短板</div>';
+      
+      gapAnalysis.weaknessAreas.slice(0, 3).forEach(weakness => {
+        const div = document.createElement('div');
+        div.className = 'flex items-center justify-between text-sm py-2 border-b border-ink-100';
+        div.innerHTML = `
+          <span class="text-ink-700">${weakness.area}</span>
+          <span class="text-ink-500 text-xs">${weakness.currentLevel} → ${weakness.targetLevel}</span>
+        `;
+        section.appendChild(div);
+      });
+      container.appendChild(section);
+    }
+    
+    // 潜在风险
+    if (gapAnalysis.potentialRisks?.length > 0) {
+      const section = document.createElement('div');
+      section.innerHTML = '<div class="text-xs font-medium text-amber-500 mb-2">潜在风险</div>';
+      
+      gapAnalysis.potentialRisks.slice(0, 2).forEach(risk => {
+        const div = document.createElement('div');
+        div.className = 'flex items-start gap-2 text-sm text-ink-600 mb-1';
+        div.innerHTML = `<i class="icon icon-alert text-amber-500 mt-0.5"></i><span>${risk}</span>`;
+        section.appendChild(div);
+      });
+      container.appendChild(section);
+    }
+  }
+
+  function renderSuggestions(suggestions) {
+    // P0 - 紧急
+    const urgentEl = document.getElementById('urgentSuggestions');
+    urgentEl.innerHTML = '';
+    (suggestions?.urgent || []).forEach((item, i) => {
+      urgentEl.appendChild(createSuggestionItem(item, i, 'rose'));
+    });
+    if (!suggestions?.urgent?.length) {
+      urgentEl.innerHTML = '<p class="text-xs text-ink-400">暂无</p>';
+    }
+    
+    // P1 - 重要
+    const importantEl = document.getElementById('importantSuggestions');
+    importantEl.innerHTML = '';
+    (suggestions?.important || []).forEach((item, i) => {
+      importantEl.appendChild(createSuggestionItem(item, i, 'amber'));
+    });
+    if (!suggestions?.important?.length) {
+      importantEl.innerHTML = '<p class="text-xs text-ink-400">暂无</p>';
+    }
+    
+    // P2 - 锦上添花
+    const niceEl = document.getElementById('niceToHaveSuggestions');
+    niceEl.innerHTML = '';
+    (suggestions?.niceToHave || []).forEach((item, i) => {
+      niceEl.appendChild(createSuggestionItem(item, i, 'blue'));
+    });
+    if (!suggestions?.niceToHave?.length) {
+      niceEl.innerHTML = '<p class="text-xs text-ink-400">暂无</p>';
+    }
+  }
+
+  function createSuggestionItem(item, index, color) {
+    const colors = {
+      rose: { bg: 'bg-rose-50', text: 'text-rose-700' },
+      amber: { bg: 'bg-amber-50', text: 'text-amber-700' },
+      blue: { bg: 'bg-blue-50', text: 'text-blue-700' }
+    };
+    
+    const c = colors[color];
+    const div = document.createElement('div');
+    div.className = `${c.bg} rounded-lg p-2.5`;
+    div.innerHTML = `
+      <div class="flex items-start gap-2">
+        <span class="text-xs font-medium ${c.text}">${index + 1}</span>
+        <div class="flex-1">
+          <div class="text-sm font-medium text-ink-800">${item.action}</div>
+          ${item.reason ? `<div class="text-xs text-ink-500 mt-0.5">${item.reason}</div>` : ''}
+        </div>
+      </div>
+    `;
+    return div;
+  }
+
+  function renderKeyQuestions(questions) {
+    const container = document.getElementById('keyQuestions');
+    if (!questions || questions.length === 0) {
+      container.innerHTML = '<p class="text-sm text-ink-400">暂无建议</p>';
+      return;
+    }
+    
+    container.innerHTML = '';
+    questions.forEach((q, i) => {
+      const div = document.createElement('div');
+      div.className = 'flex items-start gap-3 bg-white rounded-lg p-3 shadow-sm';
+      div.innerHTML = `
+        <span class="w-6 h-6 rounded-full bg-brand-500 text-white text-xs font-medium flex items-center justify-center flex-shrink-0">${i + 1}</span>
+        <span class="text-sm text-ink-700">${q}</span>
+      `;
+      container.appendChild(div);
+    });
+  }
+
+  // ==================== Mock Analysis ====================
+  
+  function generateMockAnalysis(resumeText, jdText) {
+    const resumeWords = new Set(extractKeywords(resumeText.toLowerCase()));
+    const jdWords = extractKeywords(jdText.toLowerCase());
+
+    const matched = jdWords.filter(w => 
+      resumeWords.has(w.toLowerCase()) || 
+      resumeText.toLowerCase().includes(w.toLowerCase())
+    );
+    const missing = jdWords.filter(w => !resumeText.toLowerCase().includes(w.toLowerCase()));
+
+    const matchScore = jdWords.length > 0 
+      ? Math.round((matched.length / jdWords.length) * 80 + 20)  // 基础分+匹配分
+      : 65;
+
+    const overallScore = Math.min(matchScore, 98);
+    
+    return {
+      meta: {
+        candidateName: '候选人',
+        jdPosition: '目标岗位',
+        analysisTime: new Date().toISOString(),
+        confidence: 0.7
+      },
+      finalVerdict: {
+        recommendation: overallScore >= 80 ? '强烈推荐' : overallScore >= 65 ? '推荐' : '谨慎考虑',
+        interviewPriority: overallScore >= 80 ? '高' : overallScore >= 65 ? '中' : '低',
+        expectedPerformance: overallScore >= 80 ? '可快速上手，有潜力成长' : overallScore >= 65 ? '可胜任，需要适应期' : '需要较长学习周期',
+        keyQuestions: [
+          '请描述你在大型项目中遇到的最大挑战及解决方案',
+          '如何评估技术方案的优劣？请举例说明',
+          '对于 [JD核心领域]，你的深入理解是什么？'
+        ]
+      },
+      matchMatrix: {
+        overallScore: overallScore,
+        conclusion: overallScore >= 80 ? '候选人非常匹配岗位要求，建议尽快安排面试' : overallScore >= 65 ? '候选人基本符合岗位要求，建议优化后面试' : '候选人与岗位要求有一定差距，建议重新评估',
+        dimensionScores: {
+          technical: { score: Math.min(85, overallScore + 5), weight: 0.3, detail: '具备岗位要求的核心技术栈' },
+          project: { score: Math.min(80, overallScore), weight: 0.25, detail: '项目经验与岗位相关' },
+          product: { score: Math.min(75, overallScore - 3), weight: 0.15, detail: '有一定产品思维' },
+          industry: { score: Math.min(70, overallScore - 5), weight: 0.15, detail: '了解行业动态' },
+          softSkills: { score: Math.min(85, overallScore + 2), weight: 0.15, detail: '具备良好的沟通协作能力' }
+        }
+      },
+      jdRequirements: {
+        mustHaveSkills: matched.slice(0, 8).map(s => ({ skill: s, importance: 'high' })),
+        mustHaveExperience: ['3年以上相关经验', '独立负责过完整项目'],
+        mustHaveEducation: '本科及以上学历，相关专业',
+        coreResponsibilities: ['负责核心模块开发', '参与技术方案设计', '推动项目落地']
+      },
+      candidateProfile: {
+        technicalSkills: [
+          { skill: '核心技术栈', level: '熟练' },
+          { skill: '辅助技术', level: '精通' },
+          { skill: '相关框架', level: '熟练' }
+        ],
+        projectQuality: {
+          totalProjects: 5,
+          complexityLevel: '中等',
+          highlightProject: '有大型项目经验',
+          roleDepth: '核心开发'
+        },
+        quantifiedResults: [
+          '曾主导项目上线，服务数万用户',
+          '性能优化提升50%加载速度',
+          '参与团队技术规范建设'
+        ]
+      },
+      gapAnalysis: {
+        criticalGaps: missing.slice(0, 3).map(g => ({
+          gap: g,
+          suggestion: `建议补充${g}相关经验或学习经历`
+        })),
+        weaknessAreas: [
+          { area: '技术深度', currentLevel: '熟练', targetLevel: '精通' },
+          { area: '业务理解', currentLevel: '中等', targetLevel: '深入' }
+        ],
+        potentialRisks: [
+          '缺乏目标行业的深入经验，需要时间适应',
+          '项目规模与岗位要求可能存在差距'
+        ]
+      },
+      suggestions: {
+        urgent: [
+          { action: '补充量化成果', reason: '在项目描述中加入具体数字（用户量、性能指标等）' },
+          { action: '突出核心技术深度', reason: '将最相关的技术经验放在简历顶部' }
+        ],
+        important: [
+          { action: '调整简历结构', reason: '使用STAR法则重新描述项目经验' },
+          { action: '补充目标技能', reason: `学习：${missing.slice(0, 3).join('、')}` }
+        ],
+        niceToHave: [
+          { action: '增加行业认知', reason: '了解目标行业的最新动态和技术趋势' },
+          { action: '展示学习能力', reason: '体现快速学习和技术热情' }
+        ]
+      }
+    };
+  }
+
+  function extractKeywords(text) {
+    const stopWords = new Set(['的', '了', '在', '是', '我', '有', '和', '就', '不', '人', '都', '一', '一个', '上', '也', '很', '到', '说', '要', '去', '你', '会', '着', '没有', '看', '好', '自己', '这', 'the', 'a', 'an', 'is', 'are', 'to', 'of', 'in', 'for', 'on', 'with', 'at', 'by', 'from', 'as']);
+    
+    const words = text
+      .replace(/[^\w\s\u4e00-\u9fff]/g, ' ')
+      .split(/\s+/)
+      .filter(word => word.length > 1 && !stopWords.has(word.toLowerCase()));
+
+    return [...new Set(words)].slice(0, 30);
+  }
+
+  function getMockResumeText(filename) {
+    return `【简历文本 - ${filename}】
+    
+张三
+高级前端开发工程师
+
+教育经历：
+- 某大学计算机科学与技术专业 本科
+
+工作经历：
+- 5年前端开发经验
+- 精通Vue、React框架
+- 熟悉TypeScript、Webpack、Vite
+- 有大型项目开发经验
+- 了解Node.js
+
+项目经验：
+- 电商平台前端开发
+- 管理后台系统
+- 移动端H5应用
+- 性能优化项目
+
+技能：
+- JavaScript/TypeScript
+- Vue/React
+- HTML/CSS
+- Node.js`;
+  }
+
+  // ==================== Utility Functions ====================
+  
+  function formatFileSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  }
+
+  function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  // ==================== Export & Restart ====================
+  
+  restartBtn.addEventListener('click', () => {
+    reportSection.classList.add('hidden');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  exportBtn.addEventListener('click', () => {
+    if (!state.analysisResult) return;
+    
+    const result = state.analysisResult;
+    const v = result.finalVerdict || {};
+    const m = result.matchMatrix || {};
+    
+    const reportText = `
+AI简历深度分析报告
+====================
+
+【最终结论】
+推荐等级: ${v.recommendation || '-'}
+面试优先级: ${v.interviewPriority || '-'}
+预期表现: ${v.expectedPerformance || '-'}
+
+【综合匹配度】
+总分: ${m.overallScore || 0}/100
+评估结论: ${m.conclusion || '-'}
+
+【能力匹配矩阵】
+${renderDimensionScores(m.dimensionScores)}
+
+【岗位核心要求】
+${renderJdRequirementsText(result.jdRequirements)}
+
+【候选人能力画像】
+${renderCandidateProfileText(result.candidateProfile)}
+
+【差距与风险分析】
+${renderGapAnalysisText(result.gapAnalysis)}
+
+【优先级修改建议】
+${renderSuggestionsText(result.suggestions)}
+
+【面试重点问题】
+${v.keyQuestions?.map((q, i) => `${i+1}. ${q}`).join('\n') || '无'}
+
+生成时间: ${new Date().toLocaleString('zh-CN')}
+    `.trim();
+    
+    const blob = new Blob([reportText], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `AI简历分析报告_${Date.now()}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+  
+  // 导出报告辅助函数
+  function renderDimensionScores(dimensionScores) {
+    if (!dimensionScores) return '无';
+    const names = { technical: '技术能力', project: '项目经验', product: '产品/业务理解', industry: '行业经验', softSkills: '软技能' };
+    return Object.entries(dimensionScores)
+      .map(([k, v]) => `- ${names[k] || k}: ${v.score}分 (权重${(v.weight*100).toFixed(0)}%)`)
+      .join('\n');
+  }
+  
+  function renderJdRequirementsText(jd) {
+    if (!jd) return '无';
+    const parts = [];
+    if (jd.mustHaveSkills?.length) parts.push(`必备技能: ${jd.mustHaveSkills.map(s => typeof s === 'string' ? s : s.skill).join('、')}`);
+    if (jd.mustHaveExperience?.length) parts.push(`经验要求: ${jd.mustHaveExperience.join('；')}`);
+    if (jd.mustHaveEducation) parts.push(`学历要求: ${jd.mustHaveEducation}`);
+    if (jd.coreResponsibilities?.length) parts.push(`核心职责: ${jd.coreResponsibilities.join('；')}`);
+    return parts.join('\n');
+  }
+  
+  function renderCandidateProfileText(profile) {
+    if (!profile) return '无';
+    const parts = [];
+    if (profile.technicalSkills?.length) {
+      parts.push('技术技能:');
+      profile.technicalSkills.forEach(s => parts.push(`  - ${s.skill}: ${s.level}`));
+    }
+    if (profile.projectQuality) {
+      const pq = profile.projectQuality;
+      parts.push(`项目数量: ${pq.totalProjects || '-'}；复杂度: ${pq.complexityLevel || '-'}`);
+      parts.push(`角色深度: ${pq.roleDepth || '-'}`);
+    }
+    if (profile.quantifiedResults?.length) {
+      parts.push('量化成果:');
+      profile.quantifiedResults.forEach(r => parts.push(`  - ${r}`));
+    }
+    return parts.join('\n');
+  }
+  
+  function renderGapAnalysisText(gap) {
+    if (!gap) return '无';
+    const parts = [];
+    if (gap.criticalGaps?.length) {
+      parts.push('致命差距:');
+      gap.criticalGaps.forEach(g => parts.push(`  - ${g.gap}: ${g.suggestion || ''}`));
+    }
+    if (gap.weaknessAreas?.length) {
+      parts.push('能力短板:');
+      gap.weaknessAreas.forEach(w => parts.push(`  - ${w.area}: ${w.currentLevel} → ${w.targetLevel}`));
+    }
+    if (gap.potentialRisks?.length) {
+      parts.push('潜在风险:');
+      gap.potentialRisks.forEach(r => parts.push(`  - ${r}`));
+    }
+    return parts.join('\n');
+  }
+  
+  function renderSuggestionsText(suggestions) {
+    if (!suggestions) return '无';
+    const parts = [];
+    if (suggestions.urgent?.length) {
+      parts.push('P0 - 紧急且重要:');
+      suggestions.urgent.forEach(s => parts.push(`  1. ${s.action} (原因: ${s.reason || '-'})`));
+    }
+    if (suggestions.important?.length) {
+      parts.push('P1 - 重要不紧急:');
+      suggestions.important.forEach(s => parts.push(`  1. ${s.action} (原因: ${s.reason || '-'})`));
+    }
+    if (suggestions.niceToHave?.length) {
+      parts.push('P2 - 锦上添花:');
+      suggestions.niceToHave.forEach(s => parts.push(`  1. ${s.action} (原因: ${s.reason || '-'})`));
+    }
+    return parts.join('\n');
+  }
+
+  // ==================== Resume Optimization ====================
+  
+  const optimizeBtn = document.getElementById('optimizeBtn');
+  const optimizeSection = document.getElementById('optimizeSection');
+  const optimizeLoading = document.getElementById('optimizeLoading');
+  const optimizeLoadingStatus = document.getElementById('optimizeLoadingStatus');
+  const optimizeResult = document.getElementById('optimizeResult');
+  const backToReportBtn = document.getElementById('backToReportBtn');
+  const copyOptimizedBtn = document.getElementById('copyOptimizedBtn');
+  const exportOptimizedBtn = document.getElementById('exportOptimizedBtn');
+  
+  // 优化按钮点击
+  optimizeBtn.addEventListener('click', async () => {
+    if (state.isAnalyzing) return;
+    if (!state.extractedText.trim() || !state.jdText.trim()) {
+      alert('请先上传简历并输入岗位JD');
+      return;
+    }
+    
+    state.isAnalyzing = true;
+    
+    // 显示优化loading（保留分析报告显示）
+    optimizeResult.classList.add('hidden');
+    optimizeLoading.classList.remove('hidden');
+    optimizeSection.classList.remove('hidden');
+    window.scrollTo({ top: optimizeSection.offsetTop - 100, behavior: 'smooth' });
+    
+    try {
+      const result = await performOptimization();
+      displayOptimizationResult(result);
+    } catch (error) {
+      console.error('优化失败:', error);
+      alert('优化失败: ' + error.message);
+      optimizeSection.classList.add('hidden');
+      reportSection.classList.remove('hidden');
+    } finally {
+      state.isAnalyzing = false;
+      optimizeLoading.classList.add('hidden');
+    }
+  });
+  
+  // 执行优化
+  async function performOptimization() {
+    const steps = [
+      '正在分析岗位JD的核心要求...',
+      '正在提取简历的关键信息...',
+      '正在应用STAR原则优化表达...',
+      '正在生成完整优化版本...'
+    ];
+    
+    for (let i = 0; i < steps.length; i++) {
+      optimizeLoadingStatus.textContent = steps[i];
+      await sleep(800);
+    }
+    
+    console.log('[优化] 发送请求 - 简历长度:', state.extractedText?.length);
+    console.log('[优化] 发送请求 - 简历前100字:', state.extractedText?.substring(0, 100));
+    
+    // 优先尝试后端真实优化（带超时处理）
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 75000); // 75秒超时
+      
+      const response = await fetch(`${API_BASE}/optimize`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          resumeText: state.extractedText,
+          jdText: state.jdText
+        }),
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+      
+      console.log('[优化] 响应状态:', response.status);
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('[优化] 响应数据概要:', JSON.stringify({
+          success: data.success,
+          isMock: data.optimized?.isMock,
+          note: data.optimized?.note?.substring(0, 100),
+          projectsCount: data.optimized?.optimizedProjects?.length
+        }));
+        
+        USE_MOCK = false;
+        
+        // 检查是否是 mock 降级
+        if (data.optimized && data.optimized.isMock) {
+          console.warn('AI优化失败，使用降级数据:', data.optimized.note);
+        }
+        return data.optimized;
+      }
+    } catch (uploadError) {
+      if (uploadError.name === 'AbortError') {
+        console.warn('优化请求超时');
+        throw new Error('AI优化超时（超过75秒），请稍后重试或联系管理员');
+      }
+      console.warn('后端优化失败:', uploadError.message);
+      throw uploadError;
+    }
+    
+    // 降级到mock优化
+    return generateMockOptimization(state.extractedText, state.jdText);
+  }
+  
+  // 生成Mock优化结果
+  function generateMockOptimization(resumeText, jdText) {
+    return {
+      optimizedProjects: [
+        {
+          original: '负责前端开发工作',
+          optimized: '【S】电商平台核心业务快速发展，用户规模突破100万；【T】负责核心交易流程的前端架构重构；【A】采用React 18 + TypeScript搭建组件库，引入Suspense、Concurrent Features优化渲染性能；【R】页面首屏加载提升65%，交易完成率提升18%，支撑日活用户30万+',
+          highlights: ['首屏加载+65%', '交易转化+18%', '组件库搭建'],
+          matchedSkills: ['React', 'TypeScript', '性能优化'],
+          note: '使用STAR法则重构，补充量化成果'
+        },
+        {
+          original: '参与后台管理系统开发',
+          optimized: '【S】内部管理系统效率低下，人工处理耗时占比60%；【T】主导Admin系统全模块前端实现；【A】基于Vue 3 + Element Plus实现动态表单、权限控制、数据可视化等核心功能；【R】业务处理效率提升70%，新系统上线后员工满意度达到95%',
+          highlights: ['效率提升70%', '权限系统', '数据可视化'],
+          matchedSkills: ['Vue', 'Element Plus', '权限系统'],
+          note: '突出主导角色，量化效率提升'
+        }
+      ],
+      optimizedExperience: [
+        {
+          role: '高级前端工程师',
+          company: '某科技公司',
+          period: '2022.06 - 至今',
+          original: '负责前端开发',
+          optimized: '主导核心产品前端架构设计；技术选型与规范制定；带领5人团队交付3个百万级用户项目；推动前端工程化落地，建立CI/CD流水线；持续优化核心指标，页面性能提升50%+',
+          achievements: ['5人团队管理', '3个百万级项目', '性能提升50%+'],
+          note: '从"负责"升级为"主导"，突出团队管理能力'
+        }
+      ],
+      optimizedSkills: {
+        technical: [
+          { skill: 'React / Vue', level: '精通', context: '大规模商业项目', relevance: 'high' },
+          { skill: 'TypeScript', level: '精通', context: '类型安全架构', relevance: 'high' },
+          { skill: 'Node.js', level: '熟练', context: 'BFF层开发', relevance: 'medium' },
+          { skill: '性能优化', level: '精通', context: '首屏+65%', relevance: 'high' },
+          { skill: '工程化', level: '熟练', context: 'CI/CD体系', relevance: 'medium' }
+        ],
+        soft: [
+          { skill: '团队管理', evidence: '带领5人团队完成3个项目', relevance: 'high' },
+          { skill: '技术方案设计', evidence: '主导前端架构选型', relevance: 'high' },
+          { skill: '跨团队协作', evidence: '与多部门紧密协作', relevance: 'medium' }
+        ]
+      },
+      optimizedSummary: {
+        original: '本人热爱技术，有多年开发经验',
+        optimized: '5年+前端开发经验，精通React/Vue生态，主导过多个百万级用户产品的架构设计与落地；具备强工程化思维，推动CI/CD体系建设使团队效率提升70%；关注用户体验与性能优化，核心指标提升50%+；具备团队管理经验，带领5人团队完成3个大型项目交付',
+        keywords: ['5年经验', '架构设计', '工程化', '性能优化', '团队管理'],
+        positioning: '高级前端工程师 / 技术负责人'
+      },
+      comparison: {
+        beforeCount: { projects: 2, experiences: 1, skills: 5 },
+        afterCount: { projects: 2, experiences: 1, skills: 8 },
+        improvements: [
+          '项目描述采用STAR结构，可读性提升',
+          '新增3项量化成果（性能65%、转化18%、效率70%）',
+          '技能按相关性排序，新增应用场景说明',
+          '个人总结扩展为核心亮点提炼'
+        ]
+      },
+      finalVersion: {
+        summary: '5年+前端开发经验，精通React/Vue生态，主导过多个百万级用户产品的架构设计与落地；具备强工程化思维，推动CI/CD体系建设使团队效率提升70%；关注用户体验与性能优化，核心指标提升50%+；具备团队管理经验，带领5人团队完成3个大型项目交付。',
+        projects: '1. 【S】电商平台核心业务快速发展，用户规模突破100万；【T】负责核心交易流程的前端架构重构；【A】采用React 18 + TypeScript搭建组件库，引入Suspense、Concurrent Features优化渲染性能；【R】页面首屏加载提升65%，交易完成率提升18%，支撑日活用户30万+\n\n2. 【S】内部管理系统效率低下，人工处理耗时占比60%；【T】主导Admin系统全模块前端实现；【A】基于Vue 3 + Element Plus实现动态表单、权限控制、数据可视化等核心功能；【R】业务处理效率提升70%，新系统上线后员工满意度达到95%',
+        experience: '高级前端工程师 | 某科技公司 | 2022.06 - 至今\n主导核心产品前端架构设计；技术选型与规范制定；带领5人团队交付3个百万级用户项目；推动前端工程化落地，建立CI/CD流水线；持续优化核心指标，页面性能提升50%+',
+        skills: '技术技能：React/Vue（精通）、TypeScript（精通）、Node.js（熟练）、性能优化（精通）、工程化（熟练）\n软技能：团队管理、技术方案设计、跨团队协作'
+      },
+      note: '演示模式 - 配置AI API Key后可获得个性化优化'
+    };
+  }
+  
+  // 显示优化结果
+  function displayOptimizationResult(result) {
+    console.log('[前端] displayOptimizationResult 被调用');
+    console.log('[前端] result.isMock:', result.isMock);
+    console.log('[前端] result.note:', result.note);
+    console.log('[前端] result.optimizedProjects?.length:', result.optimizedProjects?.length);
+    optimizeResult.classList.remove('hidden');
+    
+    // 显示来源标识（AI真实 vs Mock演示）
+    const sourceBadge = document.getElementById('sourceBadge');
+    const isMock = result.isMock || result.note?.includes('演示模式') || result.note?.includes('Mock') || result.note?.includes('AI优化失败') || result.note?.includes('AI调用失败') || result.note?.includes('降级') || result.note?.includes('JSON解析失败');
+    console.log('[前端] isMock 判断结果:', isMock, '原因:', result.isMock ? 'isMock=true' : result.note ? 'note包含: ' + result.note.substring(0, 50) : '无');
+    
+    if (isMock) {
+      sourceBadge.className = 'rounded-xl p-3 flex items-center gap-3 bg-amber-50 border border-amber-200';
+      sourceBadge.innerHTML = `
+        <i class="icon icon-alert-triangle text-amber-500"></i>
+        <div class="flex-1">
+          <p class="font-medium text-amber-800 text-sm">${result.isMock ? '演示模式' : 'AI调用异常'}</p>
+          <p class="text-xs text-amber-600">${result.note || '当前显示的是示例优化结果。配置AI API Key后可获得真实的个性化优化。'}</p>
+        </div>
+      `;
+      sourceBadge.classList.remove('hidden');
+    } else {
+      sourceBadge.className = 'rounded-xl p-3 flex items-center gap-3 bg-emerald-50 border border-emerald-200';
+      sourceBadge.innerHTML = `
+        <i class="icon icon-check-circle text-emerald-500"></i>
+        <div class="flex-1">
+          <p class="font-medium text-emerald-800 text-sm">AI 真实优化</p>
+          <p class="text-xs text-emerald-600">本次优化基于你的真实简历内容，由 DeepSeek AI 生成</p>
+        </div>
+      `;
+      sourceBadge.classList.remove('hidden');
+    }
+    
+    // 优化概览
+    const improvements = result.comparison?.improvements || [];
+    document.getElementById('improvementNum').textContent = improvements.length;
+    document.getElementById('improvementList').innerHTML = improvements.map((item, i) => `
+      <div class="p-2 rounded-lg bg-emerald-50 text-emerald-700 text-xs flex items-start gap-1">
+        <i class="icon icon-check-circle text-emerald-500 mt-0.5"></i>
+        <span>${item}</span>
+      </div>
+    `).join('');
+    
+    // 个人总结
+    const summary = result.optimizedSummary || {};
+    document.getElementById('summaryOriginal').textContent = summary.original || '待补充';
+    document.getElementById('summaryOptimized').textContent = summary.optimized || '待补充';
+    document.getElementById('summaryKeywords').innerHTML = (summary.keywords || []).map(k => 
+      `<span class="tag bg-brand-100 text-brand-700 text-xs">${k}</span>`
+    ).join('');
+    
+    // 项目描述
+    const projects = result.optimizedProjects || [];
+    document.getElementById('projectsOptimized').innerHTML = projects.map((p, i) => `
+      <div class="border border-ink-100 rounded-xl p-4">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="w-6 h-6 rounded-full bg-blue-500 text-white text-xs font-medium flex items-center justify-center">${i + 1}</span>
+          <span class="font-medium text-ink-800">项目 ${i + 1}</span>
+        </div>
+        <div class="grid md:grid-cols-2 gap-3 text-xs">
+          <div class="p-2 rounded bg-ink-50">
+            <div class="text-ink-400 mb-1">原文</div>
+            <div class="text-ink-600">${p.original || '-'}</div>
+          </div>
+          <div class="p-2 rounded bg-gradient-to-br from-brand-50 to-emerald-50">
+            <div class="text-brand-600 mb-1 font-medium">优化后 (STAR)</div>
+            <div class="text-ink-700">${p.optimized || '-'}</div>
+          </div>
+        </div>
+        <div class="mt-3 flex flex-wrap gap-2">
+          ${(p.highlights || []).map(h => `<span class="tag bg-emerald-100 text-emerald-700 text-xs">${h}</span>`).join('')}
+        </div>
+      </div>
+    `).join('');
+    
+    // 工作经历
+    const experiences = result.optimizedExperience || [];
+    document.getElementById('experienceOptimized').innerHTML = experiences.map(exp => `
+      <div class="border border-ink-100 rounded-xl p-4">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="font-medium text-ink-800">${exp.role || '-'}</span>
+          <span class="text-ink-400 text-sm">|</span>
+          <span class="text-ink-600 text-sm">${exp.company || '-'}</span>
+          <span class="text-ink-400 text-sm">|</span>
+          <span class="text-ink-500 text-xs">${exp.period || '-'}</span>
+        </div>
+        <div class="grid md:grid-cols-2 gap-3 text-xs">
+          <div class="p-2 rounded bg-ink-50">
+            <div class="text-ink-400 mb-1">原文</div>
+            <div class="text-ink-600">${exp.original || '-'}</div>
+          </div>
+          <div class="p-2 rounded bg-gradient-to-br from-amber-50 to-emerald-50">
+            <div class="text-amber-600 mb-1 font-medium">优化后</div>
+            <div class="text-ink-700">${exp.optimized || '-'}</div>
+          </div>
+        </div>
+        <div class="mt-3">
+          <div class="text-xs text-ink-400 mb-1">核心成果</div>
+          <div class="flex flex-wrap gap-2">
+            ${(exp.achievements || []).map(a => `<span class="tag bg-amber-100 text-amber-700 text-xs">${a}</span>`).join('')}
+          </div>
+        </div>
+      </div>
+    `).join('');
+    
+    // 技能
+    const skills = result.optimizedSkills || {};
+    const technicalSkills = skills.technical || [];
+    const softSkills = skills.soft || [];
+    
+    document.getElementById('technicalSkillsOptimized').innerHTML = technicalSkills.map(s => `
+      <div class="flex items-center justify-between p-2 rounded-lg bg-ink-50">
+        <div>
+          <span class="text-sm font-medium text-ink-700">${s.skill}</span>
+          <span class="text-xs text-ink-400 ml-2">${s.context || ''}</span>
+        </div>
+        <span class="tag bg-teal-100 text-teal-700 text-xs">${s.level || '-'}</span>
+      </div>
+    `).join('') || '<p class="text-sm text-ink-400">暂无数据</p>';
+    
+    document.getElementById('softSkillsOptimized').innerHTML = softSkills.map(s => `
+      <div class="flex items-center justify-between p-2 rounded-lg bg-ink-50">
+        <div>
+          <span class="text-sm font-medium text-ink-700">${s.skill}</span>
+          <span class="text-xs text-ink-400 ml-2">${s.evidence || ''}</span>
+        </div>
+        <span class="tag bg-purple-100 text-purple-700 text-xs">${s.relevance || ''}</span>
+      </div>
+    `).join('') || '<p class="text-sm text-ink-400">暂无数据</p>';
+    
+    // 完整版本
+    const finalVersion = result.finalVersion || {};
+    document.getElementById('finalOptimizedText').textContent = `【个人总结】
+${finalVersion.summary || '-'}
+
+【工作经历】
+${finalVersion.experience || '-'}
+
+【项目经验】
+${finalVersion.projects || '-'}
+
+【技能列表】
+${finalVersion.skills || '-'}`;
+    
+    // 保存完整文本用于复制和导出
+    state.optimizedText = document.getElementById('finalOptimizedText').textContent;
+    
+    // 滚动到结果
+    setTimeout(() => {
+      window.scrollTo({ top: optimizeResult.offsetTop - 100, behavior: 'smooth' });
+    }, 300);
+  }
+  
+  // 返回报告
+  backToReportBtn.addEventListener('click', () => {
+    optimizeSection.classList.add('hidden');
+    reportSection.classList.remove('hidden');
+    window.scrollTo({ top: reportSection.offsetTop - 100, behavior: 'smooth' });
+  });
+  
+  // 复制优化结果
+  copyOptimizedBtn.addEventListener('click', () => {
+    const text = state.optimizedText || '';
+    if (!text) return;
+    
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = copyOptimizedBtn;
+      const originalHTML = btn.innerHTML;
+      btn.innerHTML = '<i class="icon icon-check"></i> 已复制';
+      btn.classList.add('bg-emerald-100', 'text-emerald-700');
+      btn.classList.remove('bg-white', 'text-ink-700');
+      setTimeout(() => {
+        btn.innerHTML = originalHTML;
+        btn.classList.remove('bg-emerald-100', 'text-emerald-700');
+        btn.classList.add('bg-white', 'text-ink-700');
+      }, 2000);
+    }).catch(() => {
+      alert('复制失败，请手动选择复制');
+    });
+  });
+  
+  // 导出优化版简历
+  exportOptimizedBtn.addEventListener('click', () => {
+    const text = state.optimizedText || '';
+    if (!text) return;
+    
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `优化版简历_${Date.now()}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  // ==================== Init ====================
+  updateAnalyzeBtn();
+  
+  // 检查API可用性
+  async function checkApi() {
+    try {
+      const response = await fetch(`${API_BASE}/health`);
+      if (response.ok) {
+        apiStatus.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-400"></span><span>AI引擎就绪</span>';
+        USE_MOCK = false;
+      }
+    } catch (e) {
+      // 保持演示模式
+      console.log('后端未就绪，使用演示模式');
+    }
+  }
+  
+  checkApi();
+</script>
+
+</body>
+</html>
