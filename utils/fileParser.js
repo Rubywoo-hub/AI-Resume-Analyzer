@@ -1,6 +1,5 @@
 const fs = require('fs');
 const pdfParse = require('pdf-parse');
-const Tesseract = require('tesseract.js');
 
 /**
  * 解析PDF文件
@@ -24,6 +23,9 @@ async function parsePDFFile(filePath) {
  */
 async function parseImageFile(filePath) {
   try {
+    // 懒加载 tesseract.js，只有在需要时才加载
+    console.log('开始加载OCR引擎...');
+    const Tesseract = require('tesseract.js');
     const { data } = await Tesseract.recognize(filePath, 'chi_sim+eng', {
       logger: m => {
         if (m.status === 'recognizing text') {
@@ -33,7 +35,9 @@ async function parseImageFile(filePath) {
     });
     return data.text || '';
   } catch (error) {
-    throw new Error(`图片OCR识别失败: ${error.message}`);
+    console.error('OCR识别错误:', error.message);
+    // OCR失败时返回空文本，让用户可以手动输入
+    throw new Error(`图片OCR识别失败: ${error.message}。请尝试上传PDF或TXT格式简历。`);
   }
 }
 

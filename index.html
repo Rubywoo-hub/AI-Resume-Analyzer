@@ -119,8 +119,8 @@
     </div>
     <div class="flex items-center gap-4">
       <span id="apiStatus" class="flex items-center gap-2 text-sm text-ink-500">
-        <span class="w-2 h-2 rounded-full bg-amber-400"></span>
-        <span>演示模式</span>
+        <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+        <span>服务检测中...</span>
       </span>
     </div>
   </div>
@@ -687,7 +687,9 @@
 
 <script>
   // ==================== Configuration ====================
-  const API_BASE = '/api';  // 后端API基础地址
+  // Vercel部署时，将 API_BASE 改为你的 Render 后端地址，例如：
+  // const API_BASE = 'https://ai-resume-analyzer.onrender.com/api';
+  const API_BASE = '/api';
   let USE_MOCK = true;      // 动态判断：有后端则使用真实解析
   
   // ==================== State ====================
@@ -786,74 +788,76 @@
     }
 
     state.resumeFile = file;
-    
+
     // 显示loading
     uploadLoading.classList.remove('hidden');
     uploadStatus.textContent = '正在上传文件...';
-    
+
     // 显示文件信息
     fileName.textContent = file.name;
     fileSize.textContent = formatFileSize(file.size);
     fileInfo.classList.remove('hidden');
-    
+
     try {
-      // 优先使用后端真实解析（即使USE_MOCK为true也尝试）
       let parsed = false;
-      
-      // 先尝试后端真实解析
+
+      // 优先使用后端真实解析（带重试，应对 Render 冷启动）
       try {
         uploadStatus.textContent = '正在上传并解析文件...';
         const text = await uploadAndParseFile(file);
         if (text && text.trim()) {
           state.extractedText = text;
           showExtractedText(text);
-          USE_MOCK = false; // 后端可用，切换到真实模式
+          USE_MOCK = false;
           parsed = true;
         }
       } catch (uploadError) {
-        console.warn('后端解析失败，尝试本地解析:', uploadError.message);
+        console.warn('后端解析失败:', uploadError.message);
       }
-      
-      // 后端失败或返回空，尝试本地解析
-      if (!parsed) {
-        if (ext === '.txt') {
-          const text = await readTxtFile(file);
+
+      // 后端失败时，仅 TXT 文件可本地解析作为兜底（其他格式必须依赖后端）
+      if (!parsed && ext === '.txt') {
+        uploadStatus.textContent = '后端不可用，尝试本地解析...';
+        const text = await readTxtFile(file);
+        if (text && text.trim()) {
           state.extractedText = text;
           showExtractedText(text);
           parsed = true;
         }
       }
-      
-      // 都失败了，使用mock数据
+
+      // 仍未解析成功：明确告知用户，不再使用 Mock 数据
       if (!parsed) {
-        uploadStatus.textContent = '解析服务暂不可用，使用演示数据...';
-        await sleep(500);
-        state.extractedText = getMockResumeText(file.name);
-        showExtractedText(state.extractedText);
-        console.warn('使用Mock数据，用户需要重新上传真实文件');
+        throw new Error(
+          '文件解析服务暂不可用（可能服务器正在唤醒）。请等待约30秒后重试，或使用 TXT 格式简历。'
+        );
       }
     } catch (error) {
       console.error('文件处理失败:', error);
       alert('文件处理失败: ' + error.message);
       fileInfo.classList.add('hidden');
+      state.resumeFile = null;
+      state.extractedText = '';
     } finally {
       uploadLoading.classList.add('hidden');
       updateAnalyzeBtn();
     }
   }
 
-  // 上传并解析文件
+  // 上传并解析文件（带重试，应对 Render 免费服务冷启动）
   async function uploadAndParseFile(file) {
     const formData = new FormData();
     formData.append('file', file);
 
-    const response = await fetch(`${API_BASE}/upload/resume`, {
-      method: 'POST',
-      body: formData
-    });
+    const response = await fetchWithRetry(
+      `${API_BASE}/upload/resume`,
+      { method: 'POST', body: formData },
+      3,
+      60000
+    );
 
     if (!response.ok) {
-      throw new Error('上传失败');
+      throw new Error(`上传失败（HTTP ${response.status}）`);
     }
 
     const data = await response.json();
@@ -972,28 +976,32 @@
       await sleep(800);
     }
 
-    // 优先尝试后端真实分析
-    try {
-      const response = await fetch(`${API_BASE}/analysis`, {
+    // 调用后端真实分析（带重试，应对 Render 冷启动）
+    // 不再降级到 Mock 数据，避免用户误以为示例结果是真实分析
+    const response = await fetchWithRetry(
+      `${API_BASE}/analysis`,
+      {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           resumeText: state.extractedText,
           jdText: state.jdText
         })
-      });
+      },
+      3,
+      90000 // AI 分析耗时较长，单次超时 90 秒
+    );
 
-      if (response.ok) {
-        const data = await response.json();
-        USE_MOCK = false;
-        return data.analysis;
-      }
-    } catch (uploadError) {
-      console.warn('后端分析失败，使用本地分析:', uploadError.message);
+    if (!response.ok) {
+      const errText = await response.text().catch(() => '');
+      throw new Error(
+        `分析请求失败（HTTP ${response.status}）。${errText || '请稍后重试。'}`
+      );
     }
-    
-    // 降级到mock分析
-    return generateMockAnalysis(state.extractedText, state.jdText);
+
+    const data = await response.json();
+    USE_MOCK = false;
+    return data.analysis;
   }
 
   // 更新步骤状态
@@ -1613,7 +1621,7 @@
   }
 
   // ==================== Utility Functions ====================
-  
+
   function formatFileSize(bytes) {
     if (bytes < 1024) return bytes + ' B';
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
@@ -1622,6 +1630,61 @@
 
   function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  // 带重试的 fetch（应对 Render 免费服务冷启动）
+  // 当服务处于睡眠状态时，首次请求会触发唤醒（约30-60秒），需要重试
+  async function fetchWithRetry(url, options = {}, maxRetries = 3, timeoutMs = 60000) {
+    const retryDelays = [2000, 5000, 8000]; // 指数退避：2s, 5s, 8s
+    let lastError;
+
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+      try {
+        const response = await fetch(url, { ...options, signal: controller.signal });
+        clearTimeout(timeoutId);
+
+        // 5xx 服务器错误或 429 限流：可能是服务正在唤醒，重试
+        if (response.status >= 500 || response.status === 429) {
+          throw new Error(`服务器响应 ${response.status}，服务可能正在唤醒`);
+        }
+        return response;
+      } catch (error) {
+        clearTimeout(timeoutId);
+        lastError = error;
+
+        const isAbort = error.name === 'AbortError';
+        const isServerErr = error.message && error.message.includes('服务器响应');
+
+        // 网络错误、超时、5xx：重试（应对冷启动）
+        const shouldRetry = isAbort || isServerErr ||
+          error.message.includes('Failed to fetch') ||
+          error.message.includes('NetworkError') ||
+          error.message.includes('network');
+
+        if (shouldRetry && attempt < maxRetries) {
+          updateServiceStatus(`服务唤醒中... 第${attempt + 1}/${maxRetries}次重试`, 'waking');
+          await sleep(retryDelays[attempt] || 8000);
+        } else {
+          throw error;
+        }
+      }
+    }
+    throw lastError;
+  }
+
+  // 更新顶部服务状态指示器
+  function updateServiceStatus(message, type = 'waking') {
+    const config = {
+      ready: { color: 'bg-emerald-400', pulse: false, text: message || 'AI引擎就绪' },
+      waking: { color: 'bg-amber-400', pulse: true, text: message || '服务唤醒中' },
+      error: { color: 'bg-rose-400', pulse: false, text: message || '服务不可用' }
+    };
+    const c = config[type] || config.waking;
+    const pulseClass = c.pulse ? 'animate-pulse' : '';
+    apiStatus.innerHTML = `<span class="w-2 h-2 rounded-full ${c.color} ${pulseClass}"></span><span>${c.text}</span>`;
   }
 
   // ==================== Export & Restart ====================
@@ -1812,54 +1875,47 @@ ${v.keyQuestions?.map((q, i) => `${i+1}. ${q}`).join('\n') || '无'}
     
     console.log('[优化] 发送请求 - 简历长度:', state.extractedText?.length);
     console.log('[优化] 发送请求 - 简历前100字:', state.extractedText?.substring(0, 100));
-    
-    // 优先尝试后端真实优化（带超时处理）
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 75000); // 75秒超时
-      
-      const response = await fetch(`${API_BASE}/optimize`, {
+
+    // 调用后端真实优化（带重试，应对 Render 冷启动）
+    // 不再降级到 Mock 数据，避免用户看到示例优化结果误以为是真实优化
+    const response = await fetchWithRetry(
+      `${API_BASE}/optimize`,
+      {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           resumeText: state.extractedText,
           jdText: state.jdText
-        }),
-        signal: controller.signal
-      });
-      
-      clearTimeout(timeoutId);
-      
-      console.log('[优化] 响应状态:', response.status);
-      
-      if (response.ok) {
-        const data = await response.json();
-        console.log('[优化] 响应数据概要:', JSON.stringify({
-          success: data.success,
-          isMock: data.optimized?.isMock,
-          note: data.optimized?.note?.substring(0, 100),
-          projectsCount: data.optimized?.optimizedProjects?.length
-        }));
-        
-        USE_MOCK = false;
-        
-        // 检查是否是 mock 降级
-        if (data.optimized && data.optimized.isMock) {
-          console.warn('AI优化失败，使用降级数据:', data.optimized.note);
-        }
-        return data.optimized;
-      }
-    } catch (uploadError) {
-      if (uploadError.name === 'AbortError') {
-        console.warn('优化请求超时');
-        throw new Error('AI优化超时（超过75秒），请稍后重试或联系管理员');
-      }
-      console.warn('后端优化失败:', uploadError.message);
-      throw uploadError;
+        })
+      },
+      3,
+      90000 // AI 优化耗时较长，单次超时 90 秒
+    );
+
+    console.log('[优化] 响应状态:', response.status);
+
+    if (!response.ok) {
+      const errText = await response.text().catch(() => '');
+      throw new Error(
+        `优化请求失败（HTTP ${response.status}）。${errText || '请稍后重试。'}`
+      );
     }
-    
-    // 降级到mock优化
-    return generateMockOptimization(state.extractedText, state.jdText);
+
+    const data = await response.json();
+    console.log('[优化] 响应数据概要:', JSON.stringify({
+      success: data.success,
+      isMock: data.optimized?.isMock,
+      note: data.optimized?.note?.substring(0, 100),
+      projectsCount: data.optimized?.optimizedProjects?.length
+    }));
+
+    USE_MOCK = false;
+
+    // 检查后端返回的 mock 降级标记（后端自身 AI 调用失败时的降级）
+    if (data.optimized && data.optimized.isMock) {
+      console.warn('后端 AI 优化失败，返回降级数据:', data.optimized.note);
+    }
+    return data.optimized;
   }
   
   // 生成Mock优化结果
@@ -2132,17 +2188,30 @@ ${finalVersion.skills || '-'}`;
   // ==================== Init ====================
   updateAnalyzeBtn();
   
-  // 检查API可用性
+  // 检查API可用性（带重试，应对 Render 免费服务冷启动）
+  // 页面加载时若服务正在睡眠，会自动重试直到唤醒或达到上限
   async function checkApi() {
+    // 初始显示唤醒中状态
+    updateServiceStatus('服务检测中...', 'waking');
+
     try {
-      const response = await fetch(`${API_BASE}/health`);
+      const response = await fetchWithRetry(
+        `${API_BASE}/health`,
+        { method: 'GET' },
+        4,    // 最多重试 4 次（健康检查轻量，可多试）
+        15000 // 单次超时 15 秒
+      );
+
       if (response.ok) {
-        apiStatus.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-400"></span><span>AI引擎就绪</span>';
+        updateServiceStatus('AI引擎就绪', 'ready');
         USE_MOCK = false;
+      } else {
+        updateServiceStatus(`服务异常（${response.status}）`, 'error');
       }
     } catch (e) {
-      // 保持演示模式
-      console.log('后端未就绪，使用演示模式');
+      console.warn('后端健康检查失败:', e.message);
+      updateServiceStatus('服务暂不可用，请稍后重试', 'error');
+      // 不再静默降级到演示模式，让用户明确知道当前状态
     }
   }
   

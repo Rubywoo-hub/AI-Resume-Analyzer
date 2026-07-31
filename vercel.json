@@ -1,0 +1,6 @@
+{
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "installCommand": "echo 'No install needed'",
+  "buildCommand": "echo 'No build needed'"
+}
