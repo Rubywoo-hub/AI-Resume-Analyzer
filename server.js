@@ -31,6 +31,12 @@ app.use('/api/upload', uploadRoutes);
 app.use('/api/analysis', analysisRoutes);
 app.use('/api/optimize', optimizeRoutes);
 
+// 首页路由 - 确保能正确访问
+app.get('/', (req, res) => {
+  console.log('有人访问首页');
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
 // 健康检查
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
