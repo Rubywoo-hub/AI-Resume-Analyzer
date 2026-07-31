@@ -387,7 +387,7 @@
       <div class="bg-white rounded-2xl border-ink-100 shadow-card p-6 fade-in-up">
         <div class="flex items-center gap-3 mb-4">
           <div class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
-            <i class="icon icon-alert-triangle text-lg"></i>
+            <i class="icon icon-alert-circle text-lg"></i>
           </div>
           <h3 class="font-semibold text-ink-800">差距与风险分析</h3>
         </div>
@@ -458,7 +458,7 @@
     <div id="interviewSection" class="bg-gradient-to-br from-brand-50 to-ink-50 rounded-2xl border border-brand-100 p-6 fade-in-up">
       <div class="flex items-center gap-3 mb-4">
         <div class="w-10 h-10 rounded-xl bg-brand-500 text-white flex items-center justify-center">
-          <i class="icon icon-message-square-question text-lg"></i>
+          <i class="icon icon-help-circle text-lg"></i>
         </div>
         <h3 class="font-semibold text-ink-800">面试重点问题</h3>
       </div>
@@ -1058,7 +1058,10 @@
     
     // 渲染差距分析
     renderGapAnalysis(result.gapAnalysis);
-    
+
+    // 渲染意外亮点
+    renderSurpriseHighlights(result.gapAnalysis?.surpriseHighlights);
+
     // 渲染建议
     renderSuggestions(result.suggestions);
     
@@ -1404,6 +1407,25 @@
       });
       container.appendChild(section);
     }
+  }
+
+  function renderSurpriseHighlights(highlights) {
+    const container = document.getElementById('surpriseHighlights');
+    if (!highlights || highlights.length === 0) {
+      container.innerHTML = '<p class="text-sm text-ink-400">暂未发现超出预期的亮点，继续加油！</p>';
+      return;
+    }
+
+    container.innerHTML = '';
+    highlights.slice(0, 5).forEach((highlight, i) => {
+      const div = document.createElement('div');
+      div.className = 'flex items-start gap-2 p-3 rounded-lg bg-emerald-50 border border-emerald-100';
+      div.innerHTML = `
+        <i class="icon icon-sparkles text-emerald-500 mt-0.5"></i>
+        <span class="text-sm text-emerald-700">${highlight}</span>
+      `;
+      container.appendChild(div);
+    });
   }
 
   function renderSuggestions(suggestions) {
@@ -2004,7 +2026,7 @@ ${v.keyQuestions?.map((q, i) => `${i+1}. ${q}`).join('\n') || '无'}
     if (isMock) {
       sourceBadge.className = 'rounded-xl p-3 flex items-center gap-3 bg-amber-50 border border-amber-200';
       sourceBadge.innerHTML = `
-        <i class="icon icon-alert-triangle text-amber-500"></i>
+        <i class="icon icon-alert-circle text-amber-500"></i>
         <div class="flex-1">
           <p class="font-medium text-amber-800 text-sm">${result.isMock ? '演示模式' : 'AI调用异常'}</p>
           <p class="text-xs text-amber-600">${result.note || '当前显示的是示例优化结果。配置AI API Key后可获得真实的个性化优化。'}</p>
