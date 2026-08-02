@@ -14,27 +14,42 @@
           },
           colors: {
             ink: {
-              50: '#f6f7f9',
-              100: '#eceef2',
-              200: '#d6dae2',
-              300: '#aeb5c2',
-              400: '#7b8494',
-              500: '#4b5364',
-              600: '#333a49',
-              700: '#23293a',
-              800: '#15192a',
-              900: '#0b0d1a'
+              50: '#f8fafc',
+              100: '#f1f5f9',
+              200: '#e2e8f0',
+              300: '#cbd5e1',
+              400: '#94a3b8',
+              500: '#64748b',
+              600: '#475569',
+              700: '#334155',
+              800: '#1e293b',
+              900: '#0f172a'
             },
             brand: {
-              50:  '#eef4ff',
-              100: '#dae6ff',
-              500: '#3b6cf6',
-              600: '#2f59d4',
-              700: '#2647ac'
+              50:  '#eff6ff',
+              100: '#dbeafe',
+              200: '#bfdbfe',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8'
+            },
+            accent: {
+              50:  '#eef2ff',
+              100: '#e0e7ff',
+              200: '#c7d2fe',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca'
             }
           },
           boxShadow: {
-            card: '0 1px 2px rgba(15,23,42,.04), 0 4px 16px rgba(15,23,42,.06)'
+            card: '0 1px 2px rgba(15,23,42,.04), 0 4px 16px rgba(15,23,42,.06)',
+            'card-hover': '0 12px 32px rgba(59,130,246,.10), 0 4px 12px rgba(15,23,42,.05)',
+            glow: '0 0 40px rgba(99,102,241,.25)'
+          },
+          borderRadius: {
+            '2xl': '1rem',
+            '3xl': '1.5rem'
           }
         }
       }
@@ -42,29 +57,36 @@
   </script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lucide-static@0.441.0/font/lucide.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --grad-brand: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+      --grad-soft: linear-gradient(135deg, #eff6ff 0%, #eef2ff 100%);
+      --grad-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      --grad-warning: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      --grad-danger: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
+    }
+
     .icon { font-family: 'lucide' !important; font-style: normal; font-weight: normal; display: inline-block; line-height: 1; }
-    
+
+    /* ===== 动画 ===== */
     .fade-in { animation: fade .6s ease both; }
     @keyframes fade { from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none} }
-    
-    .fade-in-up { animation: fadeUp .5s ease both; }
-    @keyframes fadeUp { from{opacity:0; transform:translateY(20px)} to{opacity:1; transform:none} }
-    
+
+    .fade-in-up { animation: fadeUp .6s cubic-bezier(.16,.84,.44,1) both; }
+    @keyframes fadeUp { from{opacity:0; transform:translateY(24px)} to{opacity:1; transform:none} }
+
     .scale-in { animation: scaleIn .3s ease both; }
     @keyframes scaleIn { from{opacity:0; transform:scale(.95)} to{opacity:1; transform:scale(1)} }
-    
-    .pulse-ring {
-      animation: pulseRing 2s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
-    }
+
+    .pulse-ring { animation: pulseRing 2s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite; }
     @keyframes pulseRing {
       0% { transform: scale(0.8); opacity: 1; }
       100% { transform: scale(1.4); opacity: 0; }
     }
-    
+
     .shimmer {
-      background: linear-gradient(90deg, #f0f0f0 0%, #e0e0e0 50%, #f0f0f0 100%);
+      background: linear-gradient(90deg, #f1f5f9 0%, #e2e8f0 50%, #f1f5f9 100%);
       background-size: 200% 100%;
       animation: shimmer 1.5s infinite;
     }
@@ -72,35 +94,98 @@
       0% { background-position: 200% 0; }
       100% { background-position: -200% 0; }
     }
-    
+
     .progress-ring {
       transform: rotate(-90deg);
-      transition: stroke-dashoffset 0.5s ease;
+      transition: stroke-dashoffset 1.2s cubic-bezier(.16,.84,.44,1);
     }
-    
-    .dropzone.dragover {
-      border-color: #3b6cf6;
-      background: #eef4ff;
+
+    /* ===== AI 波纹 ===== */
+    .ai-ripple { position: relative; }
+    .ai-ripple::before, .ai-ripple::after {
+      content: ''; position: absolute; inset: 0; border-radius: inherit;
+      border: 2px solid rgba(99,102,241,.35);
+      animation: aiRipple 2.4s ease-out infinite;
+      pointer-events: none;
     }
-    
-    .scroll-smooth { scroll-behavior: smooth; }
-    
-    .card-hover {
-      transition: all 0.3s ease;
+    .ai-ripple::after { animation-delay: 1.2s; }
+    @keyframes aiRipple {
+      0% { transform: scale(1); opacity: .8; }
+      100% { transform: scale(1.25); opacity: 0; }
+    }
+
+    /* ===== 卡片 ===== */
+    .card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 1.5rem;
+      box-shadow: 0 1px 2px rgba(15,23,42,.04), 0 4px 16px rgba(15,23,42,.05);
+      transition: transform .35s cubic-bezier(.16,.84,.44,1), box-shadow .35s ease, border-color .35s ease;
     }
     .card-hover:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(15,23,42,.08);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 32px rgba(59,130,246,.10), 0 4px 12px rgba(15,23,42,.05);
+      border-color: #c7d2fe;
     }
-    
+
+    .dropzone.dragover {
+      border-color: #3b82f6;
+      background: #eff6ff;
+    }
+    .scroll-smooth { scroll-behavior: smooth; }
+
     .tag {
-      display: inline-flex;
-      align-items: center;
+      display: inline-flex; align-items: center;
       padding: 0.25rem 0.75rem;
       border-radius: 9999px;
-      font-size: 0.75rem;
-      font-weight: 500;
+      font-size: 0.75rem; font-weight: 500;
     }
+
+    /* ===== 进度条 ===== */
+    .bar-track {
+      background: #f1f5f9;
+      border-radius: 9999px;
+      overflow: hidden;
+      position: relative;
+    }
+    .bar-fill {
+      height: 100%;
+      border-radius: 9999px;
+      transition: width 1.2s cubic-bezier(.16,.84,.44,1);
+      position: relative;
+      overflow: hidden;
+    }
+    .bar-fill::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.35), transparent);
+      animation: barShine 2s ease-in-out infinite;
+    }
+    @keyframes barShine {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+
+    /* ===== 渐变文字 ===== */
+    .text-gradient {
+      background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* ===== 网格背景装饰 ===== */
+    .grid-bg {
+      background-image:
+        linear-gradient(rgba(99,102,241,.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(99,102,241,.04) 1px, transparent 1px);
+      background-size: 32px 32px;
+    }
+
+    /* ===== 滚动条 ===== */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    ::-webkit-scrollbar-track { background: transparent; }
   </style>
 </head>
 <body class="bg-ink-50 min-h-screen font-sans text-ink-700">
@@ -138,7 +223,7 @@
     <h2 class="text-4xl font-bold text-ink-800 mb-3">
       让AI帮你精准诊断简历
     </h2>
-    <p class="text-lg text-ink-500 max-w-2xl mx-auto">
+    <p class="text-lg text-ink-500 whitespace-nowrap">
       上传你的简历和目标岗位JD，AI将为你分析匹配度、识别优势不足、提供专业优化建议
     </p>
   </section>
@@ -286,61 +371,110 @@
 
   <!-- Analysis Report Section -->
   <section id="reportSection" class="hidden space-y-6">
-    
-    <!-- 最终结论卡片 -->
-    <div id="verdictCard" class="bg-white rounded-2xl border-ink-100 shadow-card p-6 fade-in-up">
-      <div class="flex items-center justify-between mb-4">
-        <div class="flex items-center gap-3">
-          <div id="verdictIcon" class="w-12 h-12 rounded-xl flex items-center justify-center"></div>
-          <div>
-            <h3 id="verdictTitle" class="text-lg font-semibold text-ink-800"></h3>
-            <p id="verdictSubtitle" class="text-sm text-ink-500"></p>
+
+    <!-- 报告页头 -->
+    <div class="flex items-center gap-3 pt-2">
+      <div class="w-1 h-7 rounded-full bg-gradient-to-b from-brand-500 to-accent-500"></div>
+      <div>
+        <h2 class="text-xl font-bold text-ink-800 tracking-tight">分析报告</h2>
+        <p class="text-xs text-ink-400 mt-0.5">AI 智能诊断 · 基于岗位匹配模型生成</p>
+      </div>
+    </div>
+
+    <!-- 最终结论卡片 (ResultHeader + StatusBadge) -->
+    <div id="verdictCard" class="card card-hover p-7 fade-in-up overflow-hidden relative">
+      <div class="absolute -top-20 -right-20 w-64 h-64 rounded-full bg-gradient-to-br from-brand-100 to-accent-100 opacity-40 blur-3xl pointer-events-none"></div>
+      <div class="relative flex flex-col lg:flex-row lg:items-center gap-6">
+        <!-- 左侧：结论 + 岗位 -->
+        <div class="flex items-center gap-4 flex-1">
+          <div id="verdictIcon" class="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0"></div>
+          <div class="min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="text-xs font-medium text-ink-400 uppercase tracking-wider">AI 分析结论</span>
+            </div>
+            <h3 id="verdictTitle" class="text-2xl font-extrabold text-ink-900 tracking-tight"></h3>
+            <p id="verdictSubtitle" class="text-sm text-ink-500 mt-1"></p>
           </div>
         </div>
-        <div id="verdictBadge" class="tag text-sm"></div>
+        <!-- 右侧：状态 Badge -->
+        <div id="verdictBadge" class="tag text-sm flex-shrink-0"></div>
       </div>
-      <div class="grid md:grid-cols-3 gap-4 pt-4 border-t border-ink-100">
+      <div class="relative grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-ink-100">
         <div>
-          <div class="text-xs text-ink-400 mb-1">面试优先级</div>
-          <div id="interviewPriority" class="text-lg font-semibold text-ink-800"></div>
+          <div class="text-xs text-ink-400 mb-1.5 flex items-center gap-1">
+            <i class="icon icon-zap text-[10px]"></i> 面试优先级
+          </div>
+          <div id="interviewPriority" class="text-xl font-extrabold text-ink-800"></div>
         </div>
         <div>
-          <div class="text-xs text-ink-400 mb-1">预期表现</div>
-          <div id="expectedPerformance" class="text-lg font-semibold text-ink-800"></div>
+          <div class="text-xs text-ink-400 mb-1.5 flex items-center gap-1">
+            <i class="icon icon-trending-up text-[10px]"></i> 预期表现
+          </div>
+          <div id="expectedPerformance" class="text-xl font-extrabold text-ink-800"></div>
         </div>
         <div>
-          <div class="text-xs text-ink-400 mb-1">分析置信度</div>
-          <div id="confidenceLevel" class="text-lg font-semibold text-ink-800"></div>
+          <div class="text-xs text-ink-400 mb-1.5 flex items-center gap-1">
+            <i class="icon icon-target text-[10px]"></i> 分析置信度
+          </div>
+          <div id="confidenceLevel" class="text-xl font-extrabold text-ink-800"></div>
         </div>
       </div>
     </div>
 
-    <!-- 综合评分与匹配矩阵 -->
-    <div class="grid md:grid-cols-5 gap-6">
-      <!-- Overall Score -->
-      <div class="md:col-span-2 bg-white rounded-2xl border-ink-100 shadow-card p-6 fade-in-up">
-        <h3 class="font-semibold text-ink-800 mb-4">综合匹配度</h3>
-        <div class="flex items-center justify-center">
-          <div class="relative w-44 h-44">
-            <svg class="progress-ring w-full h-full" viewBox="0 0 120 120">
-              <circle cx="60" cy="60" r="52" fill="none" stroke="#eceef2" stroke-width="10"/>
-              <circle id="scoreRing" cx="60" cy="60" r="52" fill="none" stroke-width="10"
-                stroke-linecap="round" stroke-dasharray="326.72" stroke-dashoffset="326.72"
-                class="transition-all duration-1000"/>
-            </svg>
-            <div class="absolute inset-0 flex flex-col items-center justify-center">
-              <span id="scoreValue" class="text-4xl font-bold text-ink-800">0</span>
-              <span class="text-xs text-ink-400 mt-1">/ 100</span>
+    <!-- 综合评分 (MatchScoreCard) + 能力矩阵 (AbilityMatrix) -->
+    <div class="grid lg:grid-cols-5 gap-6">
+      <!-- 环形评分卡 -->
+      <div class="lg:col-span-2 card card-hover p-7 fade-in-up relative overflow-hidden">
+        <div class="absolute inset-0 grid-bg opacity-60 pointer-events-none"></div>
+        <div class="relative">
+          <div class="flex items-center justify-between mb-2">
+            <div>
+              <h3 class="font-bold text-ink-800">综合匹配度</h3>
+              <p class="text-xs text-ink-400 mt-0.5">Overall Match Score</p>
+            </div>
+            <span class="tag bg-accent-50 text-accent-600">
+              <i class="icon icon-sparkles text-[10px] mr-1"></i>AI 评估
+            </span>
+          </div>
+          <div class="flex items-center justify-center my-4">
+            <div class="relative w-48 h-48 ai-ripple rounded-full">
+              <svg class="progress-ring w-full h-full" viewBox="0 0 120 120">
+                <defs>
+                  <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#3b82f6"/>
+                    <stop offset="100%" stop-color="#6366f1"/>
+                  </linearGradient>
+                </defs>
+                <circle cx="60" cy="60" r="52" fill="none" stroke="#f1f5f9" stroke-width="10"/>
+                <circle id="scoreRing" cx="60" cy="60" r="52" fill="none" stroke-width="10"
+                  stroke-linecap="round" stroke-dasharray="326.72" stroke-dashoffset="326.72"
+                  stroke="url(#scoreGradient)"
+                  class="transition-all duration-1000"/>
+              </svg>
+              <div class="absolute inset-0 flex flex-col items-center justify-center">
+                <span id="scoreValue" class="text-5xl font-extrabold text-gradient leading-none">0</span>
+                <span class="text-xs text-ink-400 mt-1.5 font-medium">/ 100</span>
+              </div>
             </div>
           </div>
+          <p id="matchConclusion" class="mt-2 text-sm text-ink-500 text-center leading-relaxed bg-ink-50/60 rounded-xl p-3"></p>
         </div>
-        <p id="matchConclusion" class="mt-4 text-sm text-ink-500 text-center"></p>
       </div>
 
-      <!-- 能力匹配矩阵 -->
-      <div class="md:col-span-3 bg-white rounded-2xl border-ink-100 shadow-card p-6 fade-in-up">
-        <h3 class="font-semibold text-ink-800 mb-4">能力匹配矩阵</h3>
-        <div id="matchMatrix" class="space-y-3">
+      <!-- 能力矩阵 -->
+      <div class="lg:col-span-3 card card-hover p-7 fade-in-up">
+        <div class="flex items-center justify-between mb-5">
+          <div>
+            <h3 class="font-bold text-ink-800">能力匹配矩阵</h3>
+            <p class="text-xs text-ink-400 mt-0.5">五维能力评分 · 加权计算</p>
+          </div>
+          <div class="flex items-center gap-3 text-[11px] text-ink-500">
+            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500"></span>优势</span>
+            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-brand-500"></span>匹配</span>
+            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-ink-300"></span>待提升</span>
+          </div>
+        </div>
+        <div id="matchMatrix" class="space-y-4">
           <!-- 维度评分将在此渲染 -->
         </div>
       </div>
@@ -348,61 +482,63 @@
 
     <!-- JD要求 vs 候选人画像 -->
     <div class="grid md:grid-cols-2 gap-6">
-      <!-- JD核心要求 -->
-      <div class="bg-white rounded-2xl border-ink-100 shadow-card p-6 fade-in-up">
-        <div class="flex items-center gap-3 mb-4">
-          <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+      <div class="card card-hover p-7 fade-in-up">
+        <div class="flex items-center gap-3 mb-5">
+          <div class="w-11 h-11 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center">
             <i class="icon icon-target text-lg"></i>
           </div>
           <div>
-            <h3 class="font-semibold text-ink-800">岗位核心要求</h3>
-            <p class="text-xs text-ink-400">从JD提取的关键能力模型</p>
+            <h3 class="font-bold text-ink-800">岗位核心要求</h3>
+            <p class="text-xs text-ink-400 mt-0.5">从 JD 提取的关键能力模型</p>
           </div>
         </div>
-        <div id="jdRequirements" class="space-y-3">
+        <div id="jdRequirements" class="space-y-4">
           <!-- JD要求将在此渲染 -->
         </div>
       </div>
 
-      <!-- 候选人能力画像 -->
-      <div class="bg-white rounded-2xl border-ink-100 shadow-card p-6 fade-in-up">
-        <div class="flex items-center gap-3 mb-4">
-          <div class="w-10 h-10 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center">
+      <div class="card card-hover p-7 fade-in-up">
+        <div class="flex items-center gap-3 mb-5">
+          <div class="w-11 h-11 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center">
             <i class="icon icon-user-check text-lg"></i>
           </div>
           <div>
-            <h3 class="font-semibold text-ink-800">候选人能力画像</h3>
-            <p class="text-xs text-ink-400">从简历提取的能力评估</p>
+            <h3 class="font-bold text-ink-800">候选人能力画像</h3>
+            <p class="text-xs text-ink-400 mt-0.5">从简历提取的能力评估</p>
           </div>
         </div>
-        <div id="candidateProfile" class="space-y-3">
+        <div id="candidateProfile" class="space-y-4">
           <!-- 候选人画像将在此渲染 -->
         </div>
       </div>
     </div>
 
-    <!-- 差距与风险分析 -->
+    <!-- 差距与风险 / 意外亮点 -->
     <div class="grid md:grid-cols-2 gap-6">
-      <!-- 差距分析 -->
-      <div class="bg-white rounded-2xl border-ink-100 shadow-card p-6 fade-in-up">
-        <div class="flex items-center gap-3 mb-4">
-          <div class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
+      <div class="card card-hover p-7 fade-in-up">
+        <div class="flex items-center gap-3 mb-5">
+          <div class="w-11 h-11 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center">
             <i class="icon icon-circle-alert text-lg"></i>
           </div>
-          <h3 class="font-semibold text-ink-800">差距与风险分析</h3>
+          <div>
+            <h3 class="font-bold text-ink-800">差距与风险分析</h3>
+            <p class="text-xs text-ink-400 mt-0.5">关键差距、短板与潜在风险</p>
+          </div>
         </div>
         <div id="gapAnalysis" class="space-y-3">
           <!-- 差距分析将在此渲染 -->
         </div>
       </div>
 
-      <!-- 意外亮点 -->
-      <div class="bg-white rounded-2xl border-ink-100 shadow-card p-6 fade-in-up">
-        <div class="flex items-center gap-3 mb-4">
-          <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+      <div class="card card-hover p-7 fade-in-up">
+        <div class="flex items-center gap-3 mb-5">
+          <div class="w-11 h-11 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
             <i class="icon icon-sparkles text-lg"></i>
           </div>
-          <h3 class="font-semibold text-ink-800">意外亮点</h3>
+          <div>
+            <h3 class="font-bold text-ink-800">意外亮点</h3>
+            <p class="text-xs text-ink-400 mt-0.5">超出预期的突出表现</p>
+          </div>
         </div>
         <div id="surpriseHighlights" class="space-y-3">
           <!-- 亮点将在此渲染 -->
@@ -411,64 +547,70 @@
     </div>
 
     <!-- 优先级修改建议 -->
-    <div class="bg-white rounded-2xl border-ink-100 shadow-card p-6 fade-in-up">
+    <div class="card card-hover p-7 fade-in-up">
       <div class="flex items-center gap-3 mb-6">
-        <div class="w-10 h-10 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center">
+        <div class="w-11 h-11 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center">
           <i class="icon icon-list-checks text-lg"></i>
         </div>
-        <h3 class="font-semibold text-ink-800">优先级修改建议</h3>
+        <div>
+          <h3 class="font-bold text-ink-800">优先级修改建议</h3>
+          <p class="text-xs text-ink-400 mt-0.5">按重要性与紧急度分级</p>
+        </div>
       </div>
       <div class="grid md:grid-cols-3 gap-4">
-        <!-- P0 - 紧急且重要 -->
-        <div class="rounded-xl border-2 border-rose-200 bg-rose-50/50 p-4">
+        <div class="rounded-2xl border border-rose-200/70 bg-rose-50/50 p-5">
           <div class="flex items-center gap-2 mb-3">
-            <span class="px-2 py-1 rounded-md bg-rose-500 text-white text-xs font-bold">P0</span>
-            <span class="text-sm font-medium text-rose-700">紧急且重要</span>
+            <span class="px-2.5 py-1 rounded-lg bg-rose-500 text-white text-xs font-bold">P0</span>
+            <span class="text-sm font-semibold text-rose-700">紧急且重要</span>
           </div>
-          <div id="urgentSuggestions" class="space-y-2">
+          <div id="urgentSuggestions" class="space-y-2.5">
             <!-- 紧急建议将在此渲染 -->
           </div>
         </div>
 
-        <!-- P1 - 重要不紧急 -->
-        <div class="rounded-xl border-2 border-amber-200 bg-amber-50/50 p-4">
+        <div class="rounded-2xl border border-amber-200/70 bg-amber-50/50 p-5">
           <div class="flex items-center gap-2 mb-3">
-            <span class="px-2 py-1 rounded-md bg-amber-500 text-white text-xs font-bold">P1</span>
-            <span class="text-sm font-medium text-amber-700">重要不紧急</span>
+            <span class="px-2.5 py-1 rounded-lg bg-amber-500 text-white text-xs font-bold">P1</span>
+            <span class="text-sm font-semibold text-amber-700">重要不紧急</span>
           </div>
-          <div id="importantSuggestions" class="space-y-2">
+          <div id="importantSuggestions" class="space-y-2.5">
             <!-- 重要建议将在此渲染 -->
           </div>
         </div>
 
-        <!-- P2 - 锦上添花 -->
-        <div class="rounded-xl border-2 border-blue-200 bg-blue-50/50 p-4">
+        <div class="rounded-2xl border border-brand-200/70 bg-brand-50/50 p-5">
           <div class="flex items-center gap-2 mb-3">
-            <span class="px-2 py-1 rounded-md bg-blue-500 text-white text-xs font-bold">P2</span>
-            <span class="text-sm font-medium text-blue-700">锦上添花</span>
+            <span class="px-2.5 py-1 rounded-lg bg-brand-500 text-white text-xs font-bold">P2</span>
+            <span class="text-sm font-semibold text-brand-700">锦上添花</span>
           </div>
-          <div id="niceToHaveSuggestions" class="space-y-2">
+          <div id="niceToHaveSuggestions" class="space-y-2.5">
             <!-- 加分建议将在此渲染 -->
           </div>
         </div>
       </div>
     </div>
 
-    <!-- 面试建议 -->
-    <div id="interviewSection" class="bg-gradient-to-br from-brand-50 to-ink-50 rounded-2xl border border-brand-100 p-6 fade-in-up">
-      <div class="flex items-center gap-3 mb-4">
-        <div class="w-10 h-10 rounded-xl bg-brand-500 text-white flex items-center justify-center">
-          <i class="icon icon-circle-help text-lg"></i>
+    <!-- 面试重点问题 -->
+    <div id="interviewSection" class="card card-hover p-7 fade-in-up relative overflow-hidden">
+      <div class="absolute -top-16 -left-16 w-56 h-56 rounded-full bg-gradient-to-br from-brand-100 to-accent-100 opacity-40 blur-3xl pointer-events-none"></div>
+      <div class="relative">
+        <div class="flex items-center gap-3 mb-5">
+          <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-brand-500 to-accent-500 text-white flex items-center justify-center shadow-glow">
+            <i class="icon icon-circle-help text-lg"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-ink-800">面试重点问题</h3>
+            <p class="text-xs text-ink-400 mt-0.5">建议重点考察的方向</p>
+          </div>
         </div>
-        <h3 class="font-semibold text-ink-800">面试重点问题</h3>
-      </div>
-      <div id="keyQuestions" class="space-y-2">
-        <!-- 面试问题将在此渲染 -->
+        <div id="keyQuestions" class="space-y-2.5">
+          <!-- 面试问题将在此渲染 -->
+        </div>
       </div>
     </div>
 
     <!-- Note (if mock mode) -->
-    <div id="mockNote" class="hidden bg-amber-50 border border-amber-200 rounded-xl p-4">
+    <div id="mockNote" class="hidden bg-amber-50 border border-amber-200 rounded-2xl p-4">
       <div class="flex items-start gap-3">
         <i class="icon icon-info text-amber-500 mt-0.5"></i>
         <div>
@@ -479,16 +621,16 @@
     </div>
 
     <!-- Action Buttons -->
-    <div class="flex justify-center gap-4 pt-4 flex-wrap">
-      <button id="optimizeBtn" class="px-6 py-3 bg-gradient-to-r from-brand-500 to-brand-600 text-white rounded-xl font-medium hover:from-brand-600 hover:to-brand-700 transition flex items-center gap-2 shadow-lg shadow-brand-500/20">
+    <div class="flex justify-center gap-3 pt-4 flex-wrap">
+      <button id="optimizeBtn" class="px-6 py-3 bg-gradient-to-r from-brand-500 to-accent-500 text-white rounded-2xl font-semibold hover:from-brand-600 hover:to-accent-600 transition flex items-center gap-2 shadow-glow">
         <i class="icon icon-wand"></i>
         优化我的简历
       </button>
-      <button id="restartBtn" class="px-6 py-3 border border-ink-200 bg-white rounded-xl font-medium text-ink-700 hover:bg-ink-50 transition flex items-center gap-2">
+      <button id="restartBtn" class="px-6 py-3 border border-ink-200 bg-white rounded-2xl font-medium text-ink-700 hover:bg-ink-50 hover:border-ink-300 transition flex items-center gap-2">
         <i class="icon icon-refresh-cw"></i>
         重新分析
       </button>
-      <button id="exportBtn" class="px-6 py-3 bg-ink-800 text-white rounded-xl font-medium hover:bg-ink-900 transition flex items-center gap-2">
+      <button id="exportBtn" class="px-6 py-3 bg-ink-800 text-white rounded-2xl font-medium hover:bg-ink-900 transition flex items-center gap-2">
         <i class="icon icon-download"></i>
         导出报告
       </button>
@@ -1080,77 +1222,71 @@
     const title = document.getElementById('verdictTitle');
     const subtitle = document.getElementById('verdictSubtitle');
     const badge = document.getElementById('verdictBadge');
-    
+
     if (!verdict) return;
-    
+
     const rec = verdict.recommendation || '谨慎考虑';
     title.textContent = rec;
-    
-    // 根据推荐等级设置样式
+
+    // 根据推荐等级设置样式（使用渐变和更大尺寸）
     const recStyles = {
-      '强烈推荐': { icon: 'icon-rocket', bg: 'bg-emerald-100', color: 'text-emerald-600', badgeBg: 'bg-emerald-500' },
-      '推荐': { icon: 'icon-circle-check', bg: 'bg-blue-100', color: 'text-blue-600', badgeBg: 'bg-blue-500' },
-      '谨慎考虑': { icon: 'icon-circle-alert', bg: 'bg-amber-100', color: 'text-amber-600', badgeBg: 'bg-amber-500' },
-      '不推荐': { icon: 'icon-circle-x', bg: 'bg-rose-100', color: 'text-rose-600', badgeBg: 'bg-rose-500' }
+      '强烈推荐': { icon: 'icon-rocket', bg: 'bg-emerald-100', color: 'text-emerald-600', badgeBg: 'bg-gradient-to-r from-emerald-500 to-emerald-600', ring: 'shadow-[0_0_20px_rgba(16,185,129,.35)]' },
+      '推荐':     { icon: 'icon-circle-check', bg: 'bg-brand-100', color: 'text-brand-600', badgeBg: 'bg-gradient-to-r from-brand-500 to-accent-500', ring: 'shadow-[0_0_20px_rgba(59,130,246,.30)]' },
+      '谨慎考虑': { icon: 'icon-circle-alert', bg: 'bg-amber-100', color: 'text-amber-600', badgeBg: 'bg-gradient-to-r from-amber-500 to-amber-600', ring: 'shadow-[0_0_20px_rgba(245,158,11,.30)]' },
+      '不推荐':   { icon: 'icon-circle-x', bg: 'bg-rose-100', color: 'text-rose-600', badgeBg: 'bg-gradient-to-r from-rose-500 to-rose-600', ring: 'shadow-[0_0_20px_rgba(244,63,94,.30)]' }
     };
-    
+
     const style = recStyles[rec] || recStyles['谨慎考虑'];
-    icon.className = `w-12 h-12 rounded-xl flex items-center justify-center ${style.bg} ${style.color}`;
-    icon.innerHTML = `<i class="icon ${style.icon} text-xl"></i>`;
-    
+    icon.className = `w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 ${style.bg} ${style.color} ${style.ring}`;
+    icon.innerHTML = `<i class="icon ${style.icon} text-2xl"></i>`;
+
     subtitle.textContent = `${meta?.candidateName || '候选人'} · 应聘 ${meta?.jdPosition || '目标岗位'}`;
-    
-    badge.className = `tag text-sm text-white ${style.badgeBg}`;
-    badge.textContent = rec;
-    
+
+    badge.className = `tag text-sm text-white px-3.5 py-1.5 ${style.badgeBg}`;
+    badge.innerHTML = `<i class="icon ${style.icon} text-xs mr-1.5"></i>${rec}`;
+
     // 详细信息
     const priorityMap = { 1: '高', 2: '中', 3: '低' };
     const priority = verdict.interviewPriority;
-    document.getElementById('interviewPriority').textContent = priority 
-      ? (typeof priority === 'number' ? (priorityMap[priority] || `${priority}级`) : priority) 
+    document.getElementById('interviewPriority').textContent = priority
+      ? (typeof priority === 'number' ? (priorityMap[priority] || `${priority}级`) : priority)
       : '-';
     document.getElementById('expectedPerformance').textContent = verdict.expectedPerformance || '-';
-    document.getElementById('confidenceLevel').textContent = meta?.confidence 
-      ? (typeof meta.confidence === 'number' && meta.confidence <= 1 
-          ? `${Math.round(meta.confidence * 100)}%` 
+    document.getElementById('confidenceLevel').textContent = meta?.confidence
+      ? (typeof meta.confidence === 'number' && meta.confidence <= 1
+          ? `${Math.round(meta.confidence * 100)}%`
           : meta.confidence)
       : '-';
   }
 
   function renderOverallScore(matchMatrix) {
     if (!matchMatrix) return;
-    
+
     const score = matchMatrix.overallScore || 0;
     const scoreRing = document.getElementById('scoreRing');
     const scoreValue = document.getElementById('scoreValue');
     const conclusion = document.getElementById('matchConclusion');
-    
+
     const circumference = 326.72;
     const offset = circumference - (score / 100) * circumference;
-    
-    // 动画
-    scoreRing.style.strokeDashoffset = offset;
-    scoreRing.style.stroke = getScoreColor(score);
-    
-    let current = 0;
-    const step = Math.max(1, Math.ceil(score / 40));
-    const timer = setInterval(() => {
-      current += step;
-      if (current >= score) {
-        current = score;
-        clearInterval(timer);
-      }
-      scoreValue.textContent = current;
-    }, 30);
-    
-    conclusion.textContent = matchMatrix.conclusion || '';
-  }
 
-  function getScoreColor(score) {
-    if (score >= 85) return '#10b981';
-    if (score >= 70) return '#3b82f6';
-    if (score >= 50) return '#f59e0b';
-    return '#f43f5e';
+    // 使用渐变描边（已在 SVG 中定义 url(#scoreGradient)）
+    scoreRing.style.strokeDashoffset = offset;
+
+    // 数字滚动动画
+    let current = 0;
+    const duration = 1200;
+    const startTime = performance.now();
+    const animate = (now) => {
+      const progress = Math.min((now - startTime) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3); // easeOutCubic
+      current = Math.round(score * eased);
+      scoreValue.textContent = current;
+      if (progress < 1) requestAnimationFrame(animate);
+    };
+    requestAnimationFrame(animate);
+
+    conclusion.textContent = matchMatrix.conclusion || '';
   }
 
   function renderMatchMatrix(dimensionScores) {
@@ -1159,7 +1295,7 @@
       container.innerHTML = '<p class="text-sm text-ink-400">暂无数据</p>';
       return;
     }
-    
+
     const dimensionNames = {
       technical: '技术能力',
       project: '项目经验',
@@ -1167,35 +1303,62 @@
       industry: '行业经验',
       softSkills: '软技能'
     };
-    
+    const dimensionIcons = {
+      technical: 'icon-code',
+      project: 'icon-briefcase',
+      product: 'icon-target',
+      industry: 'icon-building',
+      softSkills: 'icon-users'
+    };
+
     container.innerHTML = '';
-    Object.entries(dimensionScores).forEach(([key, value]) => {
+    Object.entries(dimensionScores).forEach(([key, value], idx) => {
       const score = value.score || 0;
       const weight = (value.weight * 100).toFixed(0);
       const name = dimensionNames[key] || key;
-      
+      const iconClass = dimensionIcons[key] || 'icon-circle';
+      const tier = score >= 85 ? 'high' : score >= 70 ? 'mid' : 'low';
+      const tierStyle = {
+        high: { color: '#10b981', text: 'text-emerald-600', bg: 'bg-emerald-50', label: '优势' },
+        mid:  { color: '#3b82f6', text: 'text-brand-600',   bg: 'bg-brand-50',   label: '匹配' },
+        low:  { color: '#94a3b8', text: 'text-ink-500',     bg: 'bg-ink-100',    label: '待提升' }
+      }[tier];
+
       const row = document.createElement('div');
-      row.className = 'flex items-center gap-3';
+      row.style.animationDelay = `${idx * 80}ms`;
+      row.className = 'fade-in-up';
       row.innerHTML = `
-        <div class="w-24 text-sm text-ink-600 flex-shrink-0">${name}</div>
-        <div class="flex-1 h-6 bg-ink-100 rounded-full overflow-hidden relative">
-          <div class="h-full rounded-full transition-all duration-1000" 
-               style="width: ${score}%; background: ${getScoreColor(score)};"></div>
-          <span class="absolute inset-0 flex items-center justify-center text-xs font-medium text-ink-700">
-            ${score}分
-          </span>
+        <div class="flex items-center gap-3 mb-2">
+          <div class="w-9 h-9 rounded-xl ${tierStyle.bg} ${tierStyle.text} flex items-center justify-center flex-shrink-0">
+            <i class="icon ${iconClass} text-sm"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-sm font-semibold text-ink-800">${name}</span>
+              <div class="flex items-center gap-2">
+                <span class="tag ${tierStyle.bg} ${tierStyle.text} text-[10px]">${tierStyle.label}</span>
+                <span class="text-xs text-ink-400">权重 ${weight}%</span>
+                <span class="text-base font-extrabold ${tierStyle.text} tabular-nums">${score}</span>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="w-16 text-xs text-ink-400">权重${weight}%</div>
+        <div class="bar-track h-2 ml-12">
+          <div class="bar-fill" style="width:0%; background:${tierStyle.color};">
+            <span data-target="${score}" class="hidden"></span>
+          </div>
+        </div>
+        ${value.detail ? `<p class="text-xs text-ink-500 ml-12 mt-1.5 leading-relaxed">${value.detail}</p>` : ''}
       `;
       container.appendChild(row);
-      
-      if (value.detail) {
-        const detail = document.createElement('div');
-        detail.className = 'text-xs text-ink-400 pl-27 ml-24 -mt-1';
-        detail.style.paddingLeft = '7rem';
-        detail.textContent = value.detail;
-        container.appendChild(detail);
-      }
+
+      // 触发进度条动画
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          const fill = row.querySelector('.bar-fill');
+          if (fill) fill.style.width = `${score}%`;
+        }, 60 + idx * 80);
+      });
     });
   }
 
@@ -1266,8 +1429,8 @@
 
   function createSection(title, level) {
     const div = document.createElement('div');
-    div.className = 'border-l-2 border-brand-500 pl-3';
-    div.innerHTML = `<div class="text-xs font-medium text-ink-700 mb-1">${title}</div>`;
+    div.className = 'border-l-2 border-brand-500 pl-4';
+    div.innerHTML = `<div class="text-xs font-semibold text-ink-700 mb-2 uppercase tracking-wider">${title}</div>`;
     return div;
   }
 
@@ -1350,24 +1513,24 @@
       container.innerHTML = '<p class="text-sm text-ink-400">暂无数据</p>';
       return;
     }
-    
+
     container.innerHTML = '';
-    
+
     // 致命差距
     if (gapAnalysis.criticalGaps?.length > 0) {
       const section = document.createElement('div');
       section.className = 'mb-4';
-      section.innerHTML = '<div class="text-xs font-medium text-rose-600 mb-2">致命差距</div>';
-      
+      section.innerHTML = '<div class="text-xs font-semibold text-rose-600 mb-2 uppercase tracking-wider">致命差距</div>';
+
       gapAnalysis.criticalGaps.slice(0, 3).forEach(gap => {
         const div = document.createElement('div');
         div.className = 'bg-rose-50 border border-rose-100 rounded-lg p-3 mb-2';
         div.innerHTML = `
           <div class="flex items-start gap-2">
-            <i class="icon icon-circle-x text-rose-500 mt-0.5"></i>
+            <i class="icon icon-x text-rose-500 mt-0.5"></i>
             <div class="flex-1">
               <div class="text-sm font-medium text-ink-800">${gap.gap}</div>
-              <div class="text-xs text-ink-500 mt-1">${gap.suggestion || ''}</div>
+              <div class="text-xs text-ink-500 mt-1 leading-relaxed">${gap.suggestion || ''}</div>
             </div>
           </div>
         `;
@@ -1375,34 +1538,34 @@
       });
       container.appendChild(section);
     }
-    
+
     // 能力短板
     if (gapAnalysis.weaknessAreas?.length > 0) {
       const section = document.createElement('div');
       section.className = 'mb-4';
-      section.innerHTML = '<div class="text-xs font-medium text-amber-600 mb-2">能力短板</div>';
-      
+      section.innerHTML = '<div class="text-xs font-semibold text-amber-600 mb-2 uppercase tracking-wider">能力短板</div>';
+
       gapAnalysis.weaknessAreas.slice(0, 3).forEach(weakness => {
         const div = document.createElement('div');
-        div.className = 'flex items-center justify-between text-sm py-2 border-b border-ink-100';
+        div.className = 'flex items-center justify-between text-sm py-2.5 border-b border-ink-100 last:border-0';
         div.innerHTML = `
           <span class="text-ink-700">${weakness.area}</span>
-          <span class="text-ink-500 text-xs">${weakness.currentLevel} → ${weakness.targetLevel}</span>
+          <span class="text-xs text-ink-500 font-medium">${weakness.currentLevel} → ${weakness.targetLevel}</span>
         `;
         section.appendChild(div);
       });
       container.appendChild(section);
     }
-    
+
     // 潜在风险
     if (gapAnalysis.potentialRisks?.length > 0) {
       const section = document.createElement('div');
-      section.innerHTML = '<div class="text-xs font-medium text-amber-500 mb-2">潜在风险</div>';
-      
+      section.innerHTML = '<div class="text-xs font-semibold text-amber-500 mb-2 uppercase tracking-wider">潜在风险</div>';
+
       gapAnalysis.potentialRisks.slice(0, 2).forEach(risk => {
         const div = document.createElement('div');
         div.className = 'flex items-start gap-2 text-sm text-ink-600 mb-1';
-        div.innerHTML = `<i class="icon icon-triangle-alert text-amber-500 mt-0.5"></i><span>${risk}</span>`;
+        div.innerHTML = `<i class="icon icon-triangle-alert text-amber-500 mt-0.5"></i><span class="leading-relaxed">${risk}</span>`;
         section.appendChild(div);
       });
       container.appendChild(section);
@@ -1419,10 +1582,11 @@
     container.innerHTML = '';
     highlights.slice(0, 5).forEach((highlight, i) => {
       const div = document.createElement('div');
-      div.className = 'flex items-start gap-2 p-3 rounded-lg bg-emerald-50 border border-emerald-100';
+      div.style.animationDelay = `${i * 80}ms`;
+      div.className = 'flex items-start gap-2 p-3 rounded-lg bg-emerald-50 border border-emerald-100 fade-in-up';
       div.innerHTML = `
-        <i class="icon icon-sparkles text-emerald-500 mt-0.5"></i>
-        <span class="text-sm text-emerald-700">${highlight}</span>
+        <i class="icon icon-star text-emerald-500 mt-0.5"></i>
+        <span class="text-sm text-emerald-700 leading-relaxed">${highlight}</span>
       `;
       container.appendChild(div);
     });
@@ -1462,20 +1626,20 @@
 
   function createSuggestionItem(item, index, color) {
     const colors = {
-      rose: { bg: 'bg-rose-50', text: 'text-rose-700' },
-      amber: { bg: 'bg-amber-50', text: 'text-amber-700' },
-      blue: { bg: 'bg-blue-50', text: 'text-blue-700' }
+      rose:  { bg: 'bg-rose-50', text: 'text-rose-700',   num: 'bg-rose-100' },
+      amber: { bg: 'bg-amber-50', text: 'text-amber-700', num: 'bg-amber-100' },
+      blue:  { bg: 'bg-brand-50', text: 'text-brand-700', num: 'bg-brand-100' }
     };
-    
+
     const c = colors[color];
     const div = document.createElement('div');
-    div.className = `${c.bg} rounded-lg p-2.5`;
+    div.className = `${c.bg} rounded-xl p-3`;
     div.innerHTML = `
-      <div class="flex items-start gap-2">
-        <span class="text-xs font-medium ${c.text}">${index + 1}</span>
+      <div class="flex items-start gap-2.5">
+        <span class="w-5 h-5 rounded-md ${c.num} ${c.text} text-[10px] font-bold flex items-center justify-center flex-shrink-0 mt-0.5">${index + 1}</span>
         <div class="flex-1">
           <div class="text-sm font-medium text-ink-800">${item.action}</div>
-          ${item.reason ? `<div class="text-xs text-ink-500 mt-0.5">${item.reason}</div>` : ''}
+          ${item.reason ? `<div class="text-xs text-ink-500 mt-1 leading-relaxed">${item.reason}</div>` : ''}
         </div>
       </div>
     `;
@@ -1488,14 +1652,15 @@
       container.innerHTML = '<p class="text-sm text-ink-400">暂无建议</p>';
       return;
     }
-    
+
     container.innerHTML = '';
     questions.forEach((q, i) => {
       const div = document.createElement('div');
-      div.className = 'flex items-start gap-3 bg-white rounded-lg p-3 shadow-sm';
+      div.style.animationDelay = `${i * 70}ms`;
+      div.className = 'flex items-start gap-3 bg-white/80 backdrop-blur rounded-xl p-3.5 border border-ink-100 fade-in-up';
       div.innerHTML = `
-        <span class="w-6 h-6 rounded-full bg-brand-500 text-white text-xs font-medium flex items-center justify-center flex-shrink-0">${i + 1}</span>
-        <span class="text-sm text-ink-700">${q}</span>
+        <span class="w-7 h-7 rounded-lg bg-gradient-to-br from-brand-500 to-accent-500 text-white text-xs font-bold flex items-center justify-center flex-shrink-0">${i + 1}</span>
+        <span class="text-sm text-ink-700 leading-relaxed pt-0.5">${q}</span>
       `;
       container.appendChild(div);
     });
