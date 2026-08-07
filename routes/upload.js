@@ -88,6 +88,52 @@ router.post('/resume', upload.single('file'), async (req, res) => {
   }
 });
 
+// POST /api/upload/jd - 上传JD文件（PDF/JPG/PNG/TXT）
+router.post('/jd', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: '请上传文件' });
+    }
+
+    const filePath = req.file.path;
+    const fileExt = path.extname(req.file.originalname).toLowerCase();
+    let extractedText = '';
+
+    switch (fileExt) {
+      case '.pdf':
+        extractedText = await parsePDFFile(filePath);
+        break;
+      case '.jpg':
+      case '.jpeg':
+      case '.png':
+        extractedText = await parseImageFile(filePath);
+        break;
+      case '.txt':
+        extractedText = parseTxtFile(filePath);
+        break;
+      default:
+        return res.status(400).json({ error: '不支持的文件类型' });
+    }
+
+    res.json({
+      success: true,
+      fileInfo: {
+        filename: req.file.originalname,
+        size: req.file.size,
+        type: fileExt
+      },
+      extractedText: extractedText,
+      message: 'JD文件上传并解析成功'
+    });
+  } catch (error) {
+    console.error('JD上传处理错误:', error);
+    res.status(500).json({
+      error: '文件处理失败',
+      message: error.message
+    });
+  }
+});
+
 // GET /api/upload/types - 获取支持的文件类型
 router.get('/types', (req, res) => {
   res.json({

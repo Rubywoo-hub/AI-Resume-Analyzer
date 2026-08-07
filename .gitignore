@@ -32,3 +32,6 @@ test-api.html
 # Temp files
 *.tmp
 *.bak
+
+# Tesseract language data
+*.traineddata

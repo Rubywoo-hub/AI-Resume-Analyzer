@@ -186,6 +186,39 @@
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
     ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     ::-webkit-scrollbar-track { background: transparent; }
+
+    /* ===== 文字框拖拽手柄 ===== */
+    .resizable-textarea {
+      resize: none;
+      position: relative;
+    }
+    .resizable-wrapper {
+      position: relative;
+    }
+    .resize-handle {
+      display: block;
+      width: 100%;
+      height: 8px;
+      cursor: ns-resize;
+      background: transparent;
+      margin-top: 2px;
+      position: relative;
+    }
+    .resize-handle::before {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 32px;
+      height: 4px;
+      border-radius: 2px;
+      background: #cbd5e1;
+      transition: background .2s;
+    }
+    .resize-handle:hover::before {
+      background: #6366f1;
+    }
   </style>
 </head>
 <body class="bg-ink-50 min-h-screen font-sans text-ink-700">
@@ -238,46 +271,90 @@
           <i class="icon icon-file-text text-lg"></i>
         </div>
         <div>
-          <h3 class="font-semibold text-ink-800">上传简历</h3>
-          <p class="text-xs text-ink-400">支持 PDF / JPG / PNG / TXT</p>
+          <h3 class="font-semibold text-ink-800">你的简历</h3>
+          <p class="text-xs text-ink-400">支持 PDF / JPG / PNG，或直接粘贴文字</p>
         </div>
       </div>
-      
-      <!-- Dropzone -->
-      <div id="resumeDropzone" class="dropzone border-2 border-dashed border-ink-200 rounded-xl p-8 text-center cursor-pointer hover:border-brand-500 hover:bg-brand-50/30 transition-all">
-        <div class="w-16 h-16 rounded-full bg-ink-100 mx-auto mb-4 flex items-center justify-center">
-          <i class="icon icon-cloud-upload text-2xl text-ink-400"></i>
+
+      <!-- File Upload Section -->
+      <div class="mb-4">
+        <div class="text-xs font-medium text-ink-500 mb-2 flex items-center gap-1">
+          <i class="icon icon-cloud-upload text-sm"></i>
+          文件上传
         </div>
-        <p class="text-ink-600 font-medium mb-1">拖拽文件到此处</p>
-        <p class="text-sm text-ink-400 mb-4">或点击选择文件</p>
-        <button type="button" id="selectFileBtn" class="px-4 py-2 bg-ink-800 text-white rounded-lg text-sm font-medium hover:bg-ink-900 transition">
-          选择文件
-        </button>
-        <input type="file" id="resumeFile" accept=".pdf,.jpg,.jpeg,.png,.txt" class="hidden" />
-      </div>
-      
-      <!-- File Info (shown after upload) -->
-      <div id="fileInfo" class="hidden mt-4 p-4 rounded-xl bg-emerald-50 border border-emerald-100">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center">
-            <i class="icon icon-check text-lg"></i>
+        <div id="resumeDropzone" class="dropzone border-2 border-dashed border-ink-200 rounded-xl p-4 text-center cursor-pointer hover:border-brand-500 hover:bg-brand-50/30 transition-all">
+          <div class="w-12 h-12 rounded-full bg-ink-100 mx-auto mb-2 flex items-center justify-center">
+            <i class="icon icon-cloud-upload text-lg text-ink-400"></i>
           </div>
-          <div class="flex-1 min-w-0">
-            <p id="fileName" class="font-medium text-ink-800 truncate"></p>
-            <p id="fileSize" class="text-xs text-ink-500"></p>
-          </div>
-          <button id="removeFileBtn" class="p-2 rounded-lg hover:bg-emerald-100 text-emerald-600 transition">
-            <i class="icon icon-x"></i>
+          <p class="text-ink-600 font-medium mb-1 text-sm">拖拽文件到此处</p>
+          <p class="text-xs text-ink-400 mb-2">或点击选择文件</p>
+          <button type="button" id="selectFileBtn" class="px-4 py-1.5 bg-ink-800 text-white rounded-lg text-sm font-medium hover:bg-ink-900 transition">
+            选择文件
           </button>
+          <input type="file" id="resumeFile" accept=".pdf,.jpg,.jpeg,.png" class="hidden" />
         </div>
-        <div id="extractedTextPreview" class="mt-3 p-3 bg-white rounded-lg text-sm text-ink-600 max-h-32 overflow-y-auto hidden"></div>
+        
+        <!-- File Info (shown after upload) -->
+        <div id="fileInfo" class="hidden mt-3 p-3 rounded-xl bg-emerald-50 border border-emerald-100">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center">
+              <i class="icon icon-check text-sm"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p id="fileName" class="font-medium text-ink-800 truncate text-sm"></p>
+              <p id="fileSize" class="text-xs text-ink-500"></p>
+            </div>
+            <button id="removeFileBtn" class="p-1.5 rounded-lg hover:bg-emerald-100 text-emerald-600 transition">
+              <i class="icon icon-x text-sm"></i>
+            </button>
+          </div>
+          <div id="extractedTextPreview" class="mt-2 p-2.5 bg-white rounded-lg text-xs text-ink-600 max-h-24 overflow-y-auto hidden"></div>
+        </div>
+        
+        <!-- Loading State -->
+        <div id="uploadLoading" class="hidden mt-3 text-center">
+          <div class="inline-flex items-center gap-2 text-ink-500 text-sm">
+            <div class="w-4 h-4 border-2 border-brand-500 border-t-transparent rounded-full animate-spin"></div>
+            <span id="uploadStatus">正在解析文件...</span>
+          </div>
+        </div>
       </div>
-      
-      <!-- Loading State -->
-      <div id="uploadLoading" class="hidden mt-4 text-center">
-        <div class="inline-flex items-center gap-3 text-ink-500">
-          <div class="w-5 h-5 border-2 border-brand-500 border-t-transparent rounded-full animate-spin"></div>
-          <span id="uploadStatus">正在解析文件...</span>
+
+      <div class="flex items-center gap-2 my-4">
+        <div class="flex-1 h-px bg-ink-200"></div>
+        <span class="text-xs text-ink-400">或</span>
+        <div class="flex-1 h-px bg-ink-200"></div>
+      </div>
+
+      <!-- Text Input Section -->
+      <div>
+        <div class="text-xs font-medium text-ink-500 mb-2 flex items-center gap-1">
+          <i class="icon icon-type text-sm"></i>
+          文字粘贴
+        </div>
+        <div class="resizable-wrapper">
+          <textarea 
+            id="resumeTextInput" 
+            rows="5" 
+            maxlength="20000"
+            placeholder="在此粘贴简历文字内容...&#10;&#10;包含：教育背景、工作经历、项目经验、技能等"
+            class="resizable-textarea w-full px-4 py-3 border border-ink-200 rounded-xl text-sm text-ink-700 placeholder:text-ink-300 focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 transition min-h-[120px]"
+          ></textarea>
+          <div class="resize-handle" data-target="resumeTextInput"></div>
+        </div>
+        <div class="flex justify-between items-center mt-2">
+          <span class="text-xs text-ink-400">直接粘贴简历内容</span>
+          <div class="flex items-center gap-3">
+            <span class="text-xs text-ink-400"><span id="resumeTextCount">0</span> / 20000</span>
+            <button id="loadSampleResume" class="text-xs text-brand-600 hover:text-brand-700 flex items-center gap-1">
+              <i class="icon icon-wand text-xs"></i>
+              填入示例
+            </button>
+            <button id="clearResume" class="text-xs text-ink-400 hover:text-ink-600 flex items-center gap-1">
+              <i class="icon icon-trash-2 text-xs"></i>
+              清空
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -289,33 +366,94 @@
           <i class="icon icon-briefcase text-lg"></i>
         </div>
         <div>
-          <h3 class="font-semibold text-ink-800">岗位JD</h3>
-          <p class="text-xs text-ink-400">粘贴目标岗位描述</p>
+          <h3 class="font-semibold text-ink-800">岗位描述</h3>
+          <p class="text-xs text-ink-400">支持 PDF / JPG / PNG，或直接粘贴文字</p>
         </div>
       </div>
-      
-      <div class="relative">
-        <textarea 
-          id="jdInput" 
-          rows="10" 
-          placeholder="在此粘贴岗位描述（JD）...&#10;&#10;包含：岗位职责、任职要求、技能要求等"
-          class="w-full px-4 py-3 border border-ink-200 rounded-xl text-sm text-ink-700 placeholder:text-ink-300 focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 transition resize-none"
-        ></textarea>
-        <div class="absolute bottom-3 right-3 text-xs text-ink-400">
-          <span id="jdCharCount">0</span> / 20000
+
+      <!-- File Upload Section (JD) -->
+      <div class="mb-4">
+        <div class="text-xs font-medium text-ink-500 mb-2 flex items-center gap-1">
+          <i class="icon icon-cloud-upload text-sm"></i>
+          文件上传
+        </div>
+        <div id="jdDropzone" class="border-2 border-dashed border-ink-200 rounded-xl p-4 text-center cursor-pointer hover:border-brand-500 hover:bg-brand-50/30 transition-all">
+          <div class="w-12 h-12 rounded-full bg-ink-100 mx-auto mb-2 flex items-center justify-center">
+            <i class="icon icon-cloud-upload text-lg text-ink-400"></i>
+          </div>
+          <p class="text-ink-600 font-medium mb-1 text-sm">拖拽文件到此处</p>
+          <p class="text-xs text-ink-400 mb-2">或点击选择文件</p>
+          <button type="button" id="selectJdFileBtn" class="px-4 py-1.5 bg-ink-800 text-white rounded-lg text-sm font-medium hover:bg-ink-900 transition">
+            选择文件
+          </button>
+          <input type="file" id="jdFile" accept=".pdf,.jpg,.jpeg,.png" class="hidden" />
+        </div>
+
+        <!-- JD File Info -->
+        <div id="jdFileInfo" class="hidden mt-3 p-3 rounded-xl bg-emerald-50 border border-emerald-100">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center">
+              <i class="icon icon-check text-sm"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p id="jdFileName" class="font-medium text-ink-800 truncate text-sm"></p>
+              <p id="jdFileSize" class="text-xs text-ink-500"></p>
+            </div>
+            <button id="removeJdFileBtn" class="p-1.5 rounded-lg hover:bg-emerald-100 text-emerald-600 transition">
+              <i class="icon icon-x text-sm"></i>
+            </button>
+          </div>
+          <div id="jdExtractedTextPreview" class="mt-2 p-2.5 bg-white rounded-lg text-xs text-ink-600 max-h-24 overflow-y-auto hidden"></div>
+          <button id="jdUseTextBtn" class="mt-2 w-full py-1.5 text-xs bg-white border border-brand-200 text-brand-600 rounded-lg hover:bg-brand-50 transition">
+            使用此文本填入JD输入框
+          </button>
+        </div>
+
+        <!-- JD Loading -->
+        <div id="jdUploadLoading" class="hidden mt-3 text-center">
+          <div class="inline-flex items-center gap-2 text-ink-500 text-sm">
+            <div class="w-4 h-4 border-2 border-brand-500 border-t-transparent rounded-full animate-spin"></div>
+            <span id="jdUploadStatus">正在解析文件...</span>
+          </div>
         </div>
       </div>
-      
-      <!-- Quick Fill -->
-      <div class="mt-3 flex items-center justify-between">
-        <button id="loadSampleJd" class="text-sm text-brand-600 hover:text-brand-700 flex items-center gap-1">
-          <i class="icon icon-wand text-sm"></i>
-          填入示例JD
-        </button>
-        <button id="clearJd" class="text-sm text-ink-400 hover:text-ink-600 flex items-center gap-1">
-          <i class="icon icon-trash-2 text-sm"></i>
-          清空
-        </button>
+
+      <div class="flex items-center gap-2 my-4">
+        <div class="flex-1 h-px bg-ink-200"></div>
+        <span class="text-xs text-ink-400">或</span>
+        <div class="flex-1 h-px bg-ink-200"></div>
+      </div>
+
+      <!-- Text Input Section -->
+      <div>
+        <div class="text-xs font-medium text-ink-500 mb-2 flex items-center gap-1">
+          <i class="icon icon-type text-sm"></i>
+          文字粘贴
+        </div>
+        <div class="resizable-wrapper">
+          <textarea 
+            id="jdInput" 
+            rows="5" 
+            maxlength="20000"
+            placeholder="在此粘贴岗位描述（JD）...&#10;&#10;包含：岗位职责、任职要求、技能要求等"
+            class="resizable-textarea w-full px-4 py-3 border border-ink-200 rounded-xl text-sm text-ink-700 placeholder:text-ink-300 focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 transition min-h-[120px]"
+          ></textarea>
+          <div class="resize-handle" data-target="jdInput"></div>
+        </div>
+        <div class="flex justify-between items-center mt-2">
+          <span class="text-xs text-ink-400">直接粘贴JD内容</span>
+          <div class="flex items-center gap-3">
+            <span class="text-xs text-ink-400"><span id="jdCharCount">0</span> / 20000</span>
+            <button id="loadSampleJd" class="text-xs text-brand-600 hover:text-brand-700 flex items-center gap-1">
+              <i class="icon icon-wand text-xs"></i>
+              填入示例
+            </button>
+            <button id="clearJd" class="text-xs text-ink-400 hover:text-ink-600 flex items-center gap-1">
+              <i class="icon icon-trash-2 text-xs"></i>
+              清空
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -641,7 +779,7 @@
   <section id="optimizeSection" class="hidden space-y-6">
     
     <!-- Optimization Loading -->
-    <section id="optimizeLoading" class="hidden mb-8">
+    <section id="optimizeLoading" class="hidden mt-8 mb-8">
       <div class="bg-white rounded-2xl border border-ink-100 shadow-card p-12 text-center">
         <div class="relative inline-flex items-center justify-center mb-6">
           <div class="absolute w-20 h-20 rounded-full bg-gradient-to-r from-brand-100 to-emerald-100 pulse-ring"></div>
@@ -838,12 +976,15 @@
   const state = {
     resumeFile: null,
     extractedText: '',
+    jdFile: null,
+    jdExtractedText: '',
     jdText: '',
     analysisResult: null,
     isAnalyzing: false
   };
 
   // ==================== DOM Elements ====================
+  // Resume section
   const dropzone = document.getElementById('resumeDropzone');
   const fileInput = document.getElementById('resumeFile');
   const selectFileBtn = document.getElementById('selectFileBtn');
@@ -854,10 +995,29 @@
   const extractedTextPreview = document.getElementById('extractedTextPreview');
   const uploadLoading = document.getElementById('uploadLoading');
   const uploadStatus = document.getElementById('uploadStatus');
+  const resumeTextInput = document.getElementById('resumeTextInput');
+  const resumeTextCount = document.getElementById('resumeTextCount');
+  const loadSampleResume = document.getElementById('loadSampleResume');
+  const clearResume = document.getElementById('clearResume');
+
+  // JD section
   const jdInput = document.getElementById('jdInput');
   const jdCharCount = document.getElementById('jdCharCount');
   const loadSampleJd = document.getElementById('loadSampleJd');
   const clearJd = document.getElementById('clearJd');
+  const jdDropzone = document.getElementById('jdDropzone');
+  const jdFileInput = document.getElementById('jdFile');
+  const selectJdFileBtn = document.getElementById('selectJdFileBtn');
+  const jdFileInfo = document.getElementById('jdFileInfo');
+  const jdFileName = document.getElementById('jdFileName');
+  const jdFileSize = document.getElementById('jdFileSize');
+  const removeJdFileBtn = document.getElementById('removeJdFileBtn');
+  const jdExtractedTextPreview = document.getElementById('jdExtractedTextPreview');
+  const jdUseTextBtn = document.getElementById('jdUseTextBtn');
+  const jdUploadLoading = document.getElementById('jdUploadLoading');
+  const jdUploadStatus = document.getElementById('jdUploadStatus');
+
+  // Analyze & result
   const analyzeBtn = document.getElementById('analyzeBtn');
   const loadingSection = document.getElementById('loadingSection');
   const loadingStatus = document.getElementById('loadingStatus');
@@ -865,6 +1025,148 @@
   const restartBtn = document.getElementById('restartBtn');
   const exportBtn = document.getElementById('exportBtn');
   const apiStatus = document.getElementById('apiStatus');
+
+  // ==================== Textarea Resize Handle ====================
+  document.querySelectorAll('.resize-handle').forEach(handle => {
+    const targetId = handle.dataset.target;
+    const textarea = document.getElementById(targetId);
+    let startY = 0;
+    let startHeight = 0;
+
+    handle.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      startY = e.clientY;
+      startHeight = textarea.offsetHeight;
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', onMouseUp);
+    });
+
+    function onMouseMove(e) {
+      const delta = e.clientY - startY;
+      const newHeight = Math.max(120, startHeight + delta);
+      textarea.style.height = newHeight + 'px';
+    }
+
+    function onMouseUp() {
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    }
+  });
+
+  // ==================== JD File Upload ====================
+
+  selectJdFileBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    jdFileInput.click();
+  });
+
+  jdDropzone.addEventListener('click', () => {
+    jdFileInput.click();
+  });
+
+  jdDropzone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    jdDropzone.classList.add('dragover');
+  });
+
+  jdDropzone.addEventListener('dragleave', () => {
+    jdDropzone.classList.remove('dragover');
+  });
+
+  jdDropzone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    jdDropzone.classList.remove('dragover');
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      handleJdFile(files[0]);
+    }
+  });
+
+  jdFileInput.addEventListener('change', (e) => {
+    if (e.target.files.length > 0) {
+      handleJdFile(e.target.files[0]);
+    }
+  });
+
+  removeJdFileBtn.addEventListener('click', () => {
+    state.jdFile = null;
+    state.jdExtractedText = '';
+    jdFileInput.value = '';
+    jdFileInfo.classList.add('hidden');
+    jdExtractedTextPreview.classList.add('hidden');
+    updateAnalyzeBtn();
+  });
+
+  jdUseTextBtn.addEventListener('click', () => {
+    if (state.jdExtractedText && state.jdExtractedText.trim()) {
+      jdInput.value = state.jdExtractedText;
+      state.jdText = state.jdExtractedText;
+      jdCharCount.textContent = state.jdExtractedText.length;
+      updateAnalyzeBtn();
+    }
+  });
+
+  async function handleJdFile(file) {
+    const allowedTypes = ['.pdf', '.jpg', '.jpeg', '.png'];
+    const ext = '.' + file.name.split('.').pop().toLowerCase();
+    
+    if (!allowedTypes.includes(ext)) {
+      alert(`不支持的文件类型！支持的类型: PDF, JPG, PNG`);
+      return;
+    }
+    
+    if (file.size > 10 * 1024 * 1024) {
+      alert('文件过大！请上传10MB以内的文件');
+      return;
+    }
+
+    state.jdFile = file;
+    jdFileName.textContent = file.name;
+    jdFileSize.textContent = formatFileSize(file.size);
+    jdFileInfo.classList.remove('hidden');
+    jdUploadLoading.classList.remove('hidden');
+    jdUploadStatus.textContent = '正在上传并解析JD文件...';
+
+    try {
+      const text = await uploadAndParseJdFile(file);
+      if (text && text.trim()) {
+        state.jdExtractedText = text;
+        const preview = text.length > 200 ? text.substring(0, 200) + '...' : text;
+        jdExtractedTextPreview.textContent = '📄 已解析文本预览:\n' + preview;
+        jdExtractedTextPreview.classList.remove('hidden');
+      } else {
+        throw new Error('未能从文件中提取到文本内容');
+      }
+    } catch (error) {
+      console.error('JD文件处理失败:', error);
+      alert('JD文件处理失败: ' + error.message);
+      jdFileInfo.classList.add('hidden');
+      state.jdFile = null;
+      state.jdExtractedText = '';
+    } finally {
+      jdUploadLoading.classList.add('hidden');
+      updateAnalyzeBtn();
+    }
+  }
+
+  async function uploadAndParseJdFile(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetchWithRetry(
+      `${API_BASE}/upload/jd`,
+      { method: 'POST', body: formData },
+      3,
+      60000
+    );
+
+    if (!response.ok) {
+      throw new Error(`上传失败（HTTP ${response.status}）`);
+    }
+
+    const data = await response.json();
+    return data.extractedText;
+  }
 
   // ==================== File Upload ====================
   
@@ -916,11 +1218,11 @@
 
   // 处理文件上传
   async function handleFile(file) {
-    const allowedTypes = ['.pdf', '.jpg', '.jpeg', '.png', '.txt'];
+    const allowedTypes = ['.pdf', '.jpg', '.jpeg', '.png'];
     const ext = '.' + file.name.split('.').pop().toLowerCase();
     
     if (!allowedTypes.includes(ext)) {
-      alert(`不支持的文件类型！支持的类型: PDF, JPG, PNG, TXT`);
+      alert(`不支持的文件类型！支持的类型: PDF, JPG, PNG`);
       return;
     }
     
@@ -957,21 +1259,10 @@
         console.warn('后端解析失败:', uploadError.message);
       }
 
-      // 后端失败时，仅 TXT 文件可本地解析作为兜底（其他格式必须依赖后端）
-      if (!parsed && ext === '.txt') {
-        uploadStatus.textContent = '后端不可用，尝试本地解析...';
-        const text = await readTxtFile(file);
-        if (text && text.trim()) {
-          state.extractedText = text;
-          showExtractedText(text);
-          parsed = true;
-        }
-      }
-
       // 仍未解析成功：明确告知用户，不再使用 Mock 数据
       if (!parsed) {
         throw new Error(
-          '文件解析服务暂不可用（可能服务器正在唤醒）。请等待约30秒后重试，或使用 TXT 格式简历。'
+          '文件解析服务暂不可用（可能服务器正在唤醒）。请等待约30秒后重试。'
         );
       }
     } catch (error) {
@@ -1006,16 +1297,6 @@
     return data.extractedText;
   }
 
-  // 读取TXT文件
-  function readTxtFile(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = (e) => resolve(e.target.result);
-      reader.onerror = reject;
-      reader.readAsText(file, 'UTF-8');
-    });
-  }
-
   // 显示提取的文本预览
   function showExtractedText(text) {
     if (text && text.trim()) {
@@ -1030,6 +1311,13 @@
   jdInput.addEventListener('input', (e) => {
     state.jdText = e.target.value;
     jdCharCount.textContent = state.jdText.length;
+    updateAnalyzeBtn();
+  });
+
+  // Resume text input
+  resumeTextInput.addEventListener('input', (e) => {
+    state.extractedText = e.target.value;
+    resumeTextCount.textContent = state.extractedText.length;
     updateAnalyzeBtn();
   });
 
@@ -1068,16 +1356,77 @@
     updateAnalyzeBtn();
   });
 
+  // ==================== Resume Text Handlers ====================
+  
+  loadSampleResume.addEventListener('click', () => {
+    const sampleResume = `【教育背景】
+北京大学 · 计算机科学与技术 本科
+2018.09 - 2022.06 | GPA: 3.8/4.0
+
+【工作经历】
+字节跳动 · 高级前端开发工程师
+2022.07 - 至今
+- 负责抖音电商核心业务前端开发，日活用户超5000万
+- 主导前端架构升级，页面加载性能提升40%
+- 搭建组件库与脚手架工具，被团队50+项目采用
+
+【项目经验】
+1. 电商中台系统 (2023.01 - 2023.12)
+   - 技术栈：React, TypeScript, Redux
+   - 负责核心模块开发，管理20+人团队
+   - 项目上线后GMV提升30%
+
+2. 可视化数据平台 (2022.07 - 2022.12)
+   - 技术栈：Vue3, ECharts, WebGL
+   - 实现大规模数据实时渲染，支持千万级数据点流畅展示
+
+【技能特长】
+- 精通：JavaScript/TypeScript, React, Vue
+- 熟悉：Node.js, Webpack/Vite, 微前端架构
+- 了解：Python, Go, Kubernetes
+
+【证书荣誉】
+- 2023年度技术之星
+- GitHub开源贡献者`;
+    
+    resumeTextInput.value = sampleResume;
+    state.extractedText = sampleResume;
+    resumeTextCount.textContent = sampleResume.length;
+    updateAnalyzeBtn();
+  });
+
+  clearResume.addEventListener('click', () => {
+    resumeTextInput.value = '';
+    state.extractedText = '';
+    resumeTextCount.textContent = '0';
+    updateAnalyzeBtn();
+  });
+
   // ==================== Analyze Button ====================
   
+  function getResumeText() {
+    // 优先使用文本框内容，如果文本框为空则使用文件提取的内容
+    const textInput = resumeTextInput.value.trim();
+    if (textInput) return textInput;
+    return state.extractedText.trim();
+  }
+
+  function getJdText() {
+    // 优先使用文本框内容，如果文本框为空则使用文件提取的内容
+    const textInput = jdInput.value.trim();
+    if (textInput) return textInput;
+    return state.jdExtractedText.trim();
+  }
+
   function updateAnalyzeBtn() {
-    const canAnalyze = state.extractedText.trim().length > 0 && state.jdText.trim().length > 0;
-    analyzeBtn.disabled = !canAnalyze;
+    const resumeReady = getResumeText().length > 0;
+    const jdReady = getJdText().length > 0;
+    analyzeBtn.disabled = !(resumeReady && jdReady);
   }
 
   analyzeBtn.addEventListener('click', async () => {
     if (state.isAnalyzing) return;
-    if (!state.extractedText.trim() || !state.jdText.trim()) return;
+    if (!getResumeText() || !getJdText()) return;
 
     state.isAnalyzing = true;
     analyzeBtn.disabled = true;
@@ -1126,8 +1475,8 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          resumeText: state.extractedText,
-          jdText: state.jdText
+          resumeText: getResumeText(),
+          jdText: getJdText()
         })
       },
       3,
@@ -2019,7 +2368,7 @@ ${v.keyQuestions?.map((q, i) => `${i+1}. ${q}`).join('\n') || '无'}
   // 优化按钮点击
   optimizeBtn.addEventListener('click', async () => {
     if (state.isAnalyzing) return;
-    if (!state.extractedText.trim() || !state.jdText.trim()) {
+    if (!getResumeText() || !getJdText()) {
       alert('请先上传简历并输入岗位JD');
       return;
     }
@@ -2071,8 +2420,8 @@ ${v.keyQuestions?.map((q, i) => `${i+1}. ${q}`).join('\n') || '无'}
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          resumeText: state.extractedText,
-          jdText: state.jdText
+          resumeText: getResumeText(),
+          jdText: getJdText()
         })
       },
       3,
